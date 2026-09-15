@@ -30,7 +30,7 @@ ThemeData buildLightTheme() {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       ),
     ),
-    cardTheme: CardThemeData(
+    cardTheme: CardTheme(
       color: AppColors.surfaceLight,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -63,7 +63,7 @@ ThemeData buildDarkTheme() {
       backgroundColor: AppColors.amberAccent,
       foregroundColor: AppColors.indigoPrimary,
     ),
-    cardTheme: CardThemeData(
+    cardTheme: CardTheme(
       color: AppColors.surfaceDark,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

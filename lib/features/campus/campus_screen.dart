@@ -39,7 +39,7 @@ class _CampusScreenState extends State<CampusScreen> {
         Container(
           height: 140,
           margin: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceVariant, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
           child: const Center(child: Text('Campus Map — static image placeholder')),
         ),
       ]),

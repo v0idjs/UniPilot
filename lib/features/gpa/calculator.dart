@@ -29,9 +29,7 @@ double calculateGpa(List<CourseInput> courses, GradingScale scale) {
 
 double calculateCumulative(List<List<CourseInput>> semesters, List<GradingScale> scales) {
   if (semesters.isEmpty) return 0.0;
-  final all = <CourseInput>[];
-  // For cumulative we weight each semester's GPA correctly by credits, so just flatten with scale per semester?
-  // Simpler: compute total points across all semesters.
+  // Weight each semester's GPA correctly by credits — compute total points across all semesters.
   double totalPoints = 0;
   double totalCredits = 0;
   for (var i = 0; i < semesters.length; i++) {

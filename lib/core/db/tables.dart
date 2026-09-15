@@ -16,9 +16,9 @@ class Courses extends Table {
 class ScheduleEntries extends Table {
   TextColumn get id => text()();
   TextColumn get courseId => text().customConstraint('REFERENCES courses(id) ON DELETE CASCADE')();
-  IntColumn get dayOfWeek => integer().check(dayOfWeek.isBetweenValues(1, 7))();
-  IntColumn get startMinutes => integer().check(startMinutes.isBetweenValues(0, 1439))();
-  IntColumn get endMinutes => integer().check(endMinutes.isBetweenValues(0, 1439))();
+  IntColumn get dayOfWeek => integer()();
+  IntColumn get startMinutes => integer()();
+  IntColumn get endMinutes => integer()();
   TextColumn get room => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
