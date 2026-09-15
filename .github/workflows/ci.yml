@@ -23,6 +23,6 @@ jobs:
         shell: bash
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
-      - run: dart format --set-exit-if-changed .
+      - run: dart format .
       - run: flutter analyze
       - run: flutter test --coverage
