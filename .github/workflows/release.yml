@@ -98,8 +98,9 @@ jobs:
             sed -i '/compileOptions/a \        coreLibraryDesugaringEnabled true' android/app/build.gradle || true
           fi
           if ! grep -q "coreLibraryDesugaring" android/app/build.gradle; then
-            # Add dependency before flutter block
-            sed -i '/flutter {/i dependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")\n}' android/app/build.gradle || true
+            # Append desugaring dependency at end of file (top-level)
+            printf '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n' >> android/app/build.gradle || true
+            cat android/app/build.gradle | tail -20
           fi
           # Bump Gradle wrapper to 8.7 for AGP 8.5
           if [ -f android/gradle/wrapper/gradle-wrapper.properties ]; then
