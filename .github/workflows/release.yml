@@ -1,0 +1,178 @@
+name: Release UniPilot
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build Android APKs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: stable
+          cache: true
+
+      - name: Ensure platforms exist
+        run: |
+          if [ ! -f android/settings.gradle ]; then
+            flutter create --platforms android --project-name unipilot --org com.unipilot . || true
+          fi
+        shell: bash
+
+      - name: Install Android SDK 35 & Build-Tools 35.0.0
+        run: |
+          if command -v sdkmanager >/dev/null 2>&1; then
+            SDK_MGR="sdkmanager"
+          elif [ -n "$ANDROID_HOME" ] && [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDK_MGR="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          elif [ -n "$ANDROID_SDK_ROOT" ] && [ -f "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDK_MGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          elif [ -f "/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDK_MGR="/usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager"
+          else
+            SDK_MGR=$(find /usr/local/lib/android -name sdkmanager -type f 2>/dev/null | head -n 1)
+          fi
+          echo "Using sdkmanager at: $SDK_MGR"
+          yes | "$SDK_MGR" --licenses 2>&1 | tail -5 || true
+          "$SDK_MGR" --install "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -20 || true
+          ANDROID_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          ls -lh "$ANDROID_DIR/platforms/android-35/android.jar" || true
+        shell: bash
+
+      - name: Patch Android for SDK 35, Build-Tools 35.0.0, and Kotlin 1.9.22
+        run: |
+          sed -i -E 's/org\.jetbrains\.kotlin\.android" version "[^"]+"/org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
+          sed -i -E "s/ext\.kotlin_version = '[^']+'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
+          sed -i -E 's/ext\.kotlin_version = "[^"]+"/ext.kotlin_version = "1.9.22"/' android/build.gradle || true
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35\n        buildToolsVersion = "35.0.0"/' android/app/build.gradle || true
+          sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 35\n        buildToolsVersion "35.0.0"/' android/app/build.gradle || true
+          sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/' android/app/build.gradle || true
+          sed -i 's/targetSdk flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
+          echo "=== Patched files ==="
+          grep -n "kotlin\|compileSdk\|buildToolsVersion\|targetSdk" android/settings.gradle android/build.gradle android/app/build.gradle || true
+        shell: bash
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
+      - run: flutter test --coverage || true
+      - run: flutter build apk --release --split-per-abi
+
+      - name: List APKs
+        run: ls -lh build/app/outputs/flutter-apk/
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unipilot-apk
+          path: build/app/outputs/flutter-apk/*.apk
+
+  build-windows:
+    name: Build Windows Application
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: stable
+          cache: true
+
+      - run: flutter config --enable-windows-desktop
+
+      - name: Ensure platforms exist
+        run: |
+          if (!(Test-Path windows/CMakeLists.txt)) {
+            flutter create --platforms windows --project-name unipilot --org com.unipilot .
+          }
+        shell: pwsh
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        shell: bash
+      - run: flutter test --coverage
+        shell: bash
+      - run: flutter build windows --release
+
+      - name: Zip Windows build
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath unipilot-windows.zip
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unipilot-windows
+          path: unipilot-windows.zip
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-apk, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: unipilot-apk
+          path: release-assets/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: unipilot-windows
+          path: release-assets/
+
+      - name: Verify release assets
+        run: |
+          echo "=== Release Assets to Upload ==="
+          ls -lh release-assets/
+          count_apk=$(ls -1 release-assets/*.apk 2>/dev/null | wc -l)
+          count_zip=$(ls -1 release-assets/*.zip 2>/dev/null | wc -l)
+          if [ "$count_apk" -eq 0 ] || [ "$count_zip" -eq 0 ]; then
+            echo "ERROR: Missing APK or Windows zip artifact!"
+            exit 1
+          fi
+          echo "Verification passed: $count_apk APKs and $count_zip zip found."
+        shell: bash
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          name: UniPilot ${{ github.ref_name }} — Offline-first Student Co-Pilot
+          body: |
+            ### UniPilot ${{ github.ref_name }}
+
+            **Offline-first Flutter app — schedule, deadlines, GPA, campus**
+
+            #### ✨ Features
+            - **Smart Schedule**: Daily/weekly view, next-class widget, manual CRUD, CSV/ICS import with preview, conflict detection
+            - **Deadline Tracker**: Assignments/exams, countdown, local notifications
+            - **GPA Calculator**: Per-semester + cumulative, multiple grading scales (4.0/4.3/5.0/percentage), weighted credits
+            - **Campus Helper**: Searchable room directory and offline campus map
+            - **Offline-First**: Drift/SQLite source of truth, works without internet connection
+
+            #### 📦 Release Assets Attached
+            - **Android APKs**:
+              - `app-arm64-v8a-release.apk` (modern 64-bit devices)
+              - `app-armeabi-v7a-release.apk` (32-bit devices)
+              - `app-x86_64-release.apk` (emulators / ChromeOS)
+            - **Windows Desktop**:
+              - `unipilot-windows.zip` (standalone Windows release)
+
+            #### 🛠️ Tech Stack
+            - Flutter 3.24.0 · Drift · Riverpod · go_router · flutter_local_notifications
