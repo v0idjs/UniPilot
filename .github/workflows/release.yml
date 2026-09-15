@@ -65,6 +65,9 @@ jobs:
           cat android/settings.gradle | head -30
           cat android/app/build.gradle | head -40
           sed -i -E 's/org\.jetbrains\.kotlin\.android" version "[^"]+"/org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
+          # Bump AGP from 7.3.0 to 8.5.0 for SDK 35 support
+          sed -i -E 's/com\.android\.application" version "[^"]+"/com.android.application" version "8.5.0"/' android/settings.gradle || true
+          sed -i -E 's/com\.android\.library" version "[^"]+"/com.android.library" version "8.5.0"/' android/settings.gradle || true
           sed -i -E "s/ext\.kotlin_version = '[^']+'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
           sed -i -E 's/ext\.kotlin_version = "[^"]+"/ext.kotlin_version = "1.9.22"/' android/build.gradle || true
           # Patch compileSdk - handle both 'compileSdk flutter.X' and 'compileSdk = flutter.X'
@@ -82,6 +85,11 @@ jobs:
           fi
           sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
           sed -i 's/targetSdk flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
+          # Bump Gradle wrapper to 8.7 for AGP 8.5
+          if [ -f android/gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i -E 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties || true
+            cat android/gradle/wrapper/gradle-wrapper.properties || true
+          fi
           echo "=== AFTER ==="
           cat android/app/build.gradle | head -50
           grep -n "kotlin\|compileSdk\|buildToolsVersion\|targetSdk" android/settings.gradle android/build.gradle android/app/build.gradle || true
