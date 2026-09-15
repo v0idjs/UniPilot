@@ -16,9 +16,21 @@ jobs:
           cache: true
       - name: Ensure platforms exist
         run: |
-          if [ ! -f android/build.gradle ] || [ ! -f windows/CMakeLists.txt ]; then
-            flutter create --platforms android,windows --project-name unipilot --org com.unipilot . || true
+          if [ ! -f android/build.gradle ] || [ ! -f android/settings.gradle ]; then
+            flutter create --platforms android --project-name unipilot --org com.unipilot . || true
           fi
+        shell: bash
+      - name: Patch Android for SDK 35 + Kotlin 1.9.22
+        run: |
+          sed -i 's/id "org.jetbrains.kotlin.android" version "1.7.10"/id "org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
+          sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
+          sed -i 's/compileSdk = 34/compileSdk = 35/g' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion 34/compileSdkVersion 35/g' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle || true
+          sed -i 's/targetSdk = 34/targetSdk = 35/g' android/app/build.gradle || true
+          echo "Patched Android files"
+          grep -n "compileSdk\|kotlin" android/settings.gradle android/build.gradle android/app/build.gradle || true
         shell: bash
       - run: flutter --version
       - run: flutter pub get
