@@ -1,7 +1,7 @@
 name: unipilot
 description: UniPilot — Your Personal University Co-Pilot. Offline-first schedule, deadlines, GPA and campus helper.
 publish_to: 'none'
-version: 1.0.11+12
+version: 1.0.12+13
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
