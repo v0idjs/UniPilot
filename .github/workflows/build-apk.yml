@@ -23,37 +23,21 @@ jobs:
             flutter create --platforms android --project-name unipilot --org com.unipilot . || true
           fi
         shell: bash
-      - name: Clean and install Android SDK 35
+      - name: Install Android SDK 35
         run: |
-          yes | sdkmanager --licenses || true
-          rm -rf /usr/local/lib/android/sdk/platforms/android-35 || true
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" --verbose || true
-          ls -lh /usr/local/lib/android/sdk/platforms/android-35/android.jar
-          jar tf /usr/local/lib/android/sdk/platforms/android-35/android.jar | head -5 || echo "jar check failed"
+          yes | sdkmanager --licenses 2>&1 | tail -5 || true
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -20 || true
+          ls -lh /usr/local/lib/android/sdk/platforms/android-35/android.jar || true
         shell: bash
       - name: Patch Android for SDK 35 + Kotlin 1.9.22
         run: |
-          echo "=== android/settings.gradle ==="
-          cat android/settings.gradle
-          echo "=== android/build.gradle ==="
-          cat android/build.gradle
-          echo "=== android/app/build.gradle ==="
-          cat android/app/build.gradle
-          # Kotlin in settings.gradle
           sed -i -E 's/org\.jetbrains\.kotlin\.android" version "[^"]+"/org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
-          # Kotlin in build.gradle (handle both single and double quotes)
           sed -i -E "s/ext\.kotlin_version = '[^']+'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
           sed -i -E 's/ext\.kotlin_version = "[^"]+"/ext.kotlin_version = "1.9.22"/' android/build.gradle || true
-          # Force compileSdk/targetSdk to 35 (handle flutter.compileSdkVersion variants)
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk 35/' android/app/build.gradle || true
           sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 35/' android/app/build.gradle || true
-          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/' android/app/build.gradle || true
           sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
           sed -i 's/targetSdk flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/' android/app/build.gradle || true
-          sed -i 's/compileSdk 34/compileSdk 35/g' android/app/build.gradle || true
-          sed -i 's/targetSdk 34/targetSdk 35/g' android/app/build.gradle || true
-          echo "=== PATCHED ==="
           grep -n "kotlin\|compileSdk\|targetSdk" android/settings.gradle android/build.gradle android/app/build.gradle || true
         shell: bash
       - run: flutter --version
