@@ -14,6 +14,12 @@ jobs:
           flutter-version: '3.24.0'
           channel: stable
           cache: true
+      - name: Ensure platforms exist
+        run: |
+          if [ ! -f windows/CMakeLists.txt ]; then
+            flutter create --platforms windows --project-name unipilot --org com.unipilot . || true
+          fi
+        shell: bash
       - run: flutter config --enable-windows-desktop
       - run: flutter --version
       - run: flutter doctor -v
