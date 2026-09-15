@@ -50,9 +50,11 @@ jobs:
           rm -rf "$ANDROID_DIR/platforms/android-35" || true
           rm -rf "/usr/local/lib/android/sdk/platforms/android-35" || true
           yes | "$SDK_MGR" --licenses 2>&1 | tail -5 || true
-          "$SDK_MGR" --install "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -20 || true
+          "$SDK_MGR" --install "platforms;android-35" "build-tools;35.0.0" "ndk;26.1.10909125" 2>&1 | tail -30 || true
           ls -lh "$ANDROID_DIR/platforms/android-35/android.jar" || true
           ls -lh "/usr/local/lib/android/sdk/platforms/android-35/android.jar" || true
+          ndk_path="$ANDROID_DIR/ndk/26.1.10909125/source.properties"
+          if [ -f "$ndk_path" ]; then echo "NDK 26 installed"; cat "$ndk_path" | head -5; else echo "NDK 26 missing, will try alternative install"; fi
           # Verify jar is not corrupted
           if [ -f "$ANDROID_DIR/platforms/android-35/android.jar" ]; then
             unzip -l "$ANDROID_DIR/platforms/android-35/android.jar" | head -5 || echo "WARNING: android.jar verification failed"
@@ -85,6 +87,20 @@ jobs:
           fi
           sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
           sed -i 's/targetSdk flutter.targetSdkVersion/targetSdk 35/' android/app/build.gradle || true
+          # Fix NDK version for plugins requiring 26.1.10909125
+          if grep -q "ndkVersion = flutter.ndkVersion" android/app/build.gradle; then
+            sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "26.1.10909125"/' android/app/build.gradle || true
+          elif grep -q "ndkVersion flutter.ndkVersion" android/app/build.gradle; then
+            sed -i 's/ndkVersion flutter.ndkVersion/ndkVersion = "26.1.10909125"/' android/app/build.gradle || true
+          fi
+          # Enable core library desugaring for flutter_local_notifications
+          if ! grep -q "coreLibraryDesugaringEnabled" android/app/build.gradle; then
+            sed -i '/compileOptions/a \        coreLibraryDesugaringEnabled true' android/app/build.gradle || true
+          fi
+          if ! grep -q "coreLibraryDesugaring" android/app/build.gradle; then
+            # Add dependency before flutter block
+            sed -i '/flutter {/i dependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")\n}' android/app/build.gradle || true
+          fi
           # Bump Gradle wrapper to 8.7 for AGP 8.5
           if [ -f android/gradle/wrapper/gradle-wrapper.properties ]; then
             sed -i -E 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties || true
