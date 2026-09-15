@@ -1,0 +1,46 @@
+# Node
+node_modules/
+dist/
+*.log
+npm-debug.log*
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Keep project-only ECC (do NOT ignore .opencode-ecc)
+# .opencode-ecc is intentionally tracked for project-only harness
+!.opencode-ecc/
+
+# But ignore install state if you prefer local-only tracking (optional)
+# Uncomment to ignore: .opencode-ecc/ecc-install-state.json
+
+# Temp
+tmp/
+temp/
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+build/
+android/app/build/
+android/.gradle/
+windows/flutter/generated_*
+coverage/
+*.g.dart
+*.drift.dart
+*.freezed.dart
+/.opencode-ecc
+AGENTS.md
+opencode.json
+/docs/adr

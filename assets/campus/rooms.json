@@ -1,0 +1,7 @@
+[
+  {"id":"1","building":"Main Building","room":"A101","floor":"1F","notes":"Near main entrance"},
+  {"id":"2","building":"Main Building","room":"A203","floor":"2F","notes":"Computer lab"},
+  {"id":"3","building":"Science Wing","room":"S-304","floor":"3F","notes":"Chemistry lab"},
+  {"id":"4","building":"Library","room":"L-102","floor":"1F","notes":"Study room 2"},
+  {"id":"5","building":"Library","room":"L-201","floor":"2F","notes":"Silent zone"}
+]
