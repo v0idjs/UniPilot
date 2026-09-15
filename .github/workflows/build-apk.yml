@@ -20,17 +20,27 @@ jobs:
             flutter create --platforms android --project-name unipilot --org com.unipilot . || true
           fi
         shell: bash
+      - name: Install Android SDK 35
+        run: |
+          yes | sdkmanager --install "platforms;android-35" "build-tools;35.0.0" || true
+          sdkmanager --list | grep "android-35" || true
+        shell: bash
       - name: Patch Android for SDK 35 + Kotlin 1.9.22
         run: |
-          sed -i 's/id "org.jetbrains.kotlin.android" version "1.7.10"/id "org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
+          echo "=== BEFORE ==="
+          cat android/settings.gradle | head -30
+          cat android/build.gradle | head -30
+          sed -i 's/version "1.7.10"/version "1.9.22"/' android/settings.gradle || true
+          sed -i 's/version "1.8.10"/version "1.9.22"/' android/settings.gradle || true
           sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
-          sed -i 's/compileSdk = 34/compileSdk = 35/g' android/app/build.gradle || true
+          sed -i "s/ext.kotlin_version = \".*\"/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
           sed -i 's/compileSdkVersion 34/compileSdkVersion 35/g' android/app/build.gradle || true
+          sed -i 's/compileSdk 34/compileSdk 35/g' android/app/build.gradle || true
           sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle || true
           sed -i 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle || true
-          sed -i 's/targetSdk = 34/targetSdk = 35/g' android/app/build.gradle || true
-          echo "Patched Android files"
-          grep -n "compileSdk\|kotlin" android/settings.gradle android/build.gradle android/app/build.gradle || true
+          sed -i 's/targetSdk 34/targetSdk 35/g' android/app/build.gradle || true
+          echo "=== AFTER ==="
+          grep -n "kotlin\|compileSdk" android/settings.gradle android/build.gradle android/app/build.gradle || true
         shell: bash
       - run: flutter --version
       - run: flutter pub get
