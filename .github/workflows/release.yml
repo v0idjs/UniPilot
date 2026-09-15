@@ -97,13 +97,13 @@ jobs:
           if ! grep -q "coreLibraryDesugaringEnabled" android/app/build.gradle; then
             sed -i '/compileOptions/a \        coreLibraryDesugaringEnabled true' android/app/build.gradle || true
           fi
-          if ! grep -q "coreLibraryDesugaring" android/app/build.gradle; then
+          if ! grep -q "desugar_jdk_libs" android/app/build.gradle; then
             # Append desugaring dependency at end of file (top-level) - Groovy syntax
             printf '\ndependencies {\n    coreLibraryDesugaring '\''com.android.tools:desugar_jdk_libs:2.1.4'\''\n}\n' >> android/app/build.gradle || true
             echo "=== Desugaring dependency added ==="
-            cat android/app/build.gradle | tail -30
-            grep -n "coreLibraryDesugaring" android/app/build.gradle || true
           fi
+          cat android/app/build.gradle | tail -30
+          grep -n "coreLibraryDesugaring\|desugar" android/app/build.gradle || true
           # Bump Gradle wrapper to 8.7 for AGP 8.5
           if [ -f android/gradle/wrapper/gradle-wrapper.properties ]; then
             sed -i -E 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties || true
