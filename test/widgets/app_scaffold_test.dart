@@ -16,7 +16,7 @@ void main() {
     final db = FakeUniPilotDatabase();
     addTearDown(db.close);
 
-    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
