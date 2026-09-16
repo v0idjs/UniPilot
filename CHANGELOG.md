@@ -2,6 +2,24 @@
 
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
+## v0.3.0 — 2026-09-16
+### Added
+- Brand mark surfaced inside the app bar on every section, matching the launcher icon
+- Responsive navigation with a side rail on wide desktop windows and a bottom bar on phones
+- Branded next-class hero with live countdown and room display
+- Reusable empty and error states with clear next steps and retry actions
+- Completed visual system covering inputs, snackbars, navigation, dialogs, and sheets in both themes
+- Startup error fallback so a widget failure renders a message instead of a blank screen
+- Windows setup and troubleshooting guide
+
+### Changed
+- Placeholder cards replaced with purposeful empty states across the schedule
+- Loading and failure states now share one consistent look and behavior
+
+### Fixed
+- Detail sheet and hero row overflow on compact screen sizes
+- Theme API usage aligned with the pinned framework version
+
 ## v0.2.0 — 2026-09-16
 ### Added
 - Course details with editing, deletion, and per-course weekly time slots with automatic conflict detection
