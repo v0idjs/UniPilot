@@ -27,10 +27,12 @@ final _router = GoRouter(
 );
 
 class UniPilotApp extends StatelessWidget {
-  const UniPilotApp({super.key});
+  final List<Override> overrides;
+  const UniPilotApp({super.key, this.overrides = const []});
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: overrides,
       child: MaterialApp.router(
         title: 'UniPilot',
         theme: buildLightTheme(),

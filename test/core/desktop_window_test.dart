@@ -9,7 +9,7 @@ void main() {
     // Regression: transparent background produced a transparent window
     // with no visible content on Windows (issue #1).
     expect(options.backgroundColor, isNot(Colors.transparent));
-    expect(options.backgroundColor?.a, 1.0);
+    expect(options.backgroundColor?.alpha, 0xFF);
     expect(options.size, const Size(1280, 800));
     expect(options.center, isTrue);
     expect(options.title, 'UniPilot');

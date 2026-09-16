@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/db/providers.dart';
 
-class DeadlineListScreen extends StatelessWidget {
+class DeadlineListScreen extends ConsumerWidget {
   const DeadlineListScreen({super.key});
 
   void _showAddDeadline(BuildContext context) {
@@ -15,10 +17,33 @@ class DeadlineListScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(assignmentsProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Deadlines')),
-      body: const Center(child: Text('No deadlines yet — add one')),
+      body: items.when(
+        data: (list) {
+          if (list.isEmpty) {
+            return const Center(child: Text('No deadlines yet — add one'));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: list.length,
+            itemBuilder: (context, i) {
+              final a = list[i];
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.task_alt),
+                  title: Text(a.title),
+                  subtitle: Text('Due ${a.dueAt.toLocal().toString().split(' ')[0]}'),
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Could not load deadlines: $e')),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddDeadline(context),
         icon: const Icon(Icons.add_task),
@@ -28,15 +53,22 @@ class DeadlineListScreen extends StatelessWidget {
   }
 }
 
-class _AddDeadlineForm extends StatefulWidget {
+class _AddDeadlineForm extends ConsumerStatefulWidget {
   const _AddDeadlineForm();
   @override
-  State<_AddDeadlineForm> createState() => _AddDeadlineFormState();
+  ConsumerState<_AddDeadlineForm> createState() => _AddDeadlineFormState();
 }
 
-class _AddDeadlineFormState extends State<_AddDeadlineForm> {
+class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
   final _title = TextEditingController();
   DateTime? _due;
+  bool _saving = false;
+  @override
+  void dispose() {
+    _title.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
@@ -51,15 +83,35 @@ class _AddDeadlineFormState extends State<_AddDeadlineForm> {
       ),
       const SizedBox(height: 12),
       FilledButton(
-        onPressed: () {
-          if (_title.text.trim().isEmpty || _due == null) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter title and due date')));
-            return;
-          }
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Deadline "${_title.text}" saved')));
-          Navigator.pop(context);
-        },
-        child: const Text('Save'),
+        onPressed: _saving
+            ? null
+            : () async {
+                if (_title.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter title')));
+                  return;
+                }
+                final due = _due ?? DateTime.now().add(const Duration(days: 1));
+                setState(() => _saving = true);
+                try {
+                  await ref.read(dbProvider).createAssignment(
+                        title: _title.text.trim(),
+                        dueAt: due,
+                      );
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Deadline "${_title.text.trim()}" saved offline')),
+                  );
+                  Navigator.pop(context);
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Could not save deadline: $e')),
+                  );
+                } finally {
+                  if (mounted) setState(() => _saving = false);
+                }
+              },
+        child: Text(_saving ? 'Saving' : 'Save'),
       ),
     ]);
   }
