@@ -17,10 +17,14 @@ void main() {
         child: const MaterialApp(home: ScheduleScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    // Bounded pumps: the loading spinner animates forever, so
+    // pumpAndSettle would never settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.tap(find.text('Add Course'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Course code'),
@@ -31,7 +35,8 @@ void main() {
       'Intro',
     );
     await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.textContaining('CS101'), findsWidgets);
   });

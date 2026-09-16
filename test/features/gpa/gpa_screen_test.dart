@@ -17,17 +17,22 @@ void main() {
         child: const MaterialApp(home: GpaScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    // Bounded pumps: the loading spinner animates forever, so
+    // pumpAndSettle would never settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.tap(find.text('Add Semester'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Semester name'),
       'Fall 2026',
     );
     await tester.tap(find.text('Create'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.textContaining('Fall 2026'), findsWidgets);
   });

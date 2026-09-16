@@ -17,10 +17,14 @@ void main() {
         child: const MaterialApp(home: DeadlineListScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    // Bounded pumps: the loading spinner animates forever, so
+    // pumpAndSettle would never settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.tap(find.text('Add Deadline'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Title'),
@@ -29,7 +33,8 @@ void main() {
     // Use the fallback date path: the form defaults to a due date when
     // none is picked, so saving must still persist and render the item.
     await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.textContaining('Essay'), findsWidgets);
   });

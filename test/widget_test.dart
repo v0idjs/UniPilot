@@ -11,7 +11,10 @@ void main() {
     await tester.pumpWidget(
       UniPilotApp(overrides: [dbProvider.overrideWithValue(db)]),
     );
-    await tester.pumpAndSettle();
+    // Bounded pumps: loading spinners animate forever, so
+    // pumpAndSettle would never settle.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Schedule'), findsWidgets);
   });
 }
