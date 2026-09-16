@@ -206,30 +206,48 @@ jobs:
           echo "Verification passed: $count_apk APKs and $count_zip zip found."
         shell: bash
 
+      - name: Extract changelog for this tag
+        run: |
+          TAG="${{ github.ref_name }}"
+          echo "Extracting changelog for $TAG"
+          awk -v tag="$TAG" '
+            $0 ~ "^## " tag {p=1; print; next}
+            $0 ~ /^## v/ {if(p) exit}
+            p' CHANGELOG.md > /tmp/changelog.txt
+          cat /tmp/changelog.txt
+          if [ ! -s /tmp/changelog.txt ]; then
+            echo "No changelog entry for $TAG, using fallback"
+            echo "### Changes in $TAG" > /tmp/changelog.txt
+            git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "HEAD")..HEAD >> /tmp/changelog.txt || true
+          fi
+          # Prepare body with header + changelog + assets
+          cat > /tmp/release_body.md << 'EOF'
+          ### UniPilot ${{ github.ref_name }}
+
+          **Offline-first Flutter app — schedule, deadlines, GPA, campus**
+
+          EOF
+          cat /tmp/changelog.txt >> /tmp/release_body.md
+          cat >> /tmp/release_body.md << 'EOF'
+
+          #### 📦 Release Assets Attached
+          - **Android APKs**:
+            - `app-arm64-v8a-release.apk` (modern 64-bit devices)
+            - `app-armeabi-v7a-release.apk` (32-bit devices)
+            - `app-x86_64-release.apk` (emulators / ChromeOS)
+          - **Windows Desktop**:
+            - `unipilot-windows.zip` (standalone Windows release)
+
+          #### 🛠️ Tech Stack
+          - Flutter 3.24.0 · Drift · Riverpod · go_router · flutter_local_notifications
+          EOF
+          cat /tmp/release_body.md
+        shell: bash
+
       - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: release-assets/*
           name: UniPilot ${{ github.ref_name }} — Offline-first Student Co-Pilot
-          body: |
-            ### UniPilot ${{ github.ref_name }}
-
-            **Offline-first Flutter app — schedule, deadlines, GPA, campus**
-
-            #### ✨ Features
-            - **Smart Schedule**: Daily/weekly view, next-class widget, manual CRUD, CSV/ICS import with preview, conflict detection
-            - **Deadline Tracker**: Assignments/exams, countdown, local notifications
-            - **GPA Calculator**: Per-semester + cumulative, multiple grading scales (4.0/4.3/5.0/percentage), weighted credits
-            - **Campus Helper**: Searchable room directory and offline campus map
-            - **Offline-First**: Drift/SQLite source of truth, works without internet connection
-
-            #### 📦 Release Assets Attached
-            - **Android APKs**:
-              - `app-arm64-v8a-release.apk` (modern 64-bit devices)
-              - `app-armeabi-v7a-release.apk` (32-bit devices)
-              - `app-x86_64-release.apk` (emulators / ChromeOS)
-            - **Windows Desktop**:
-              - `unipilot-windows.zip` (standalone Windows release)
-
-            #### 🛠️ Tech Stack
-            - Flutter 3.24.0 · Drift · Riverpod · go_router · flutter_local_notifications
+          body_path: /tmp/release_body.md
+          generate_release_notes: true

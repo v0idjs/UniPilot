@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/v0idjs/UniPilot?label=release)](https://github.com/v0idjs/UniPilot/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-![UniPilot Logo](assets/logo.svg)
+<img src="assets/logo.svg" width="140" alt="UniPilot Logo">
 
 Offline-first Flutter app: schedule, deadlines, GPA, campus room finder. Single codebase → Android APK + Windows exe via GitHub Actions.
 
