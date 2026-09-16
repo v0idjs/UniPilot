@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/brand_logo.dart';
 import 'campus_data.dart';
 
 class CampusScreen extends StatefulWidget {
@@ -13,7 +14,13 @@ class _CampusScreenState extends State<CampusScreen> {
   Widget build(BuildContext context) {
     final rooms = searchRooms(query, campusRoomsSample);
     return Scaffold(
-      appBar: AppBar(title: const Text('Campus')),
+      appBar: AppBar(
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: BrandLogo(size: 28),
+        ),
+        title: const Text('Campus'),
+      ),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.all(12),

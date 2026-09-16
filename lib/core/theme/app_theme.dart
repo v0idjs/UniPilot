@@ -36,8 +36,57 @@ ThemeData buildLightTheme() {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     chipTheme: base.chipTheme.copyWith(
-      backgroundColor: AppColors.indigoPrimary.withOpacity(0.08),
+      backgroundColor: AppColors.indigoPrimary.withValues(alpha: 0.08),
       selectedColor: AppColors.amberAccent,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.indigoPrimary.withValues(alpha: 0.04),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: AppColors.indigoPrimary.withValues(alpha: 0.2),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.indigoPrimary, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: AppColors.indigoPrimary,
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColors.surfaceLight,
+      indicatorColor: AppColors.amberAccent.withValues(alpha: 0.25),
+      labelTextStyle: WidgetStateProperty.all(
+        const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+      ),
+    ),
+    navigationRailTheme: const NavigationRailThemeData(
+      backgroundColor: AppColors.surfaceLight,
+      selectedIconTheme: IconThemeData(color: AppColors.indigoPrimary),
+      selectedLabelTextStyle: TextStyle(
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.w600,
+        color: AppColors.indigoPrimary,
+      ),
+      indicatorColor: AppColors.amberAccent,
+    ),
+    dialogTheme: DialogTheme(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      showDragHandle: true,
+    ),
+    dividerTheme: DividerThemeData(
+      color: AppColors.indigoPrimary.withValues(alpha: 0.12),
     ),
     textTheme: _buildTextTheme(base.textTheme),
   );
@@ -67,6 +116,55 @@ ThemeData buildDarkTheme() {
       color: AppColors.surfaceDark,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: 0.04),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.amberAccent, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: AppColors.indigoDark,
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColors.surfaceDark,
+      indicatorColor: AppColors.amberAccent.withValues(alpha: 0.3),
+      labelTextStyle: WidgetStateProperty.all(
+        const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+      ),
+    ),
+    navigationRailTheme: const NavigationRailThemeData(
+      backgroundColor: AppColors.surfaceDark,
+      selectedIconTheme: IconThemeData(color: AppColors.amberAccent),
+      selectedLabelTextStyle: TextStyle(
+        fontFamily: 'Inter',
+        fontWeight: FontWeight.w600,
+        color: AppColors.amberAccent,
+      ),
+      indicatorColor: AppColors.indigoLight,
+    ),
+    dialogTheme: DialogTheme(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      showDragHandle: true,
+    ),
+    dividerTheme: DividerThemeData(
+      color: Colors.white.withValues(alpha: 0.12),
     ),
     textTheme: _buildTextTheme(base.textTheme),
   );

@@ -52,4 +52,5 @@ MIT — see [LICENSE](LICENSE).
 - `docs/adr/001-stack.md`
 - `docs/import-format.md`
 - `docs/release.md`
+- `docs/windows.md`
 - `CHANGELOG.md`

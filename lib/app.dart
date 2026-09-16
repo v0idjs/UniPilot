@@ -47,6 +47,14 @@ class UniPilotApp extends StatelessWidget {
 class AppScaffold extends StatelessWidget {
   final Widget child;
   const AppScaffold({super.key, required this.child});
+
+  static const _tabs = [
+    (Icons.calendar_today, 'Schedule', '/schedule'),
+    (Icons.task_alt, 'Deadlines', '/deadlines'),
+    (Icons.calculate, 'GPA', '/gpa'),
+    (Icons.map, 'Campus', '/campus'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final loc = GoRouterState.of(context).uri.toString();
@@ -54,25 +62,41 @@ class AppScaffold extends StatelessWidget {
     if (loc.startsWith('/deadlines')) index = 1;
     else if (loc.startsWith('/gpa')) index = 2;
     else if (loc.startsWith('/campus')) index = 3;
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) {
-          switch (i) {
-            case 0: context.go('/schedule'); break;
-            case 1: context.go('/deadlines'); break;
-            case 2: context.go('/gpa'); break;
-            case 3: context.go('/campus'); break;
-          }
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.calendar_today), label: 'Schedule'),
-          NavigationDestination(icon: Icon(Icons.task_alt), label: 'Deadlines'),
-          NavigationDestination(icon: Icon(Icons.calculate), label: 'GPA'),
-          NavigationDestination(icon: Icon(Icons.map), label: 'Campus'),
-        ],
-      ),
+    void go(int i) => context.go(_tabs[i].$3);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 800) {
+          return Scaffold(
+            body: Row(children: [
+              NavigationRail(
+                selectedIndex: index,
+                onDestinationSelected: go,
+                labelType: NavigationRailLabelType.all,
+                destinations: [
+                  for (final t in _tabs)
+                    NavigationRailDestination(
+                      icon: Icon(t.$1),
+                      label: Text(t.$2),
+                    ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: child),
+            ]),
+          );
+        }
+        return Scaffold(
+          body: child,
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: index,
+            onDestinationSelected: go,
+            destinations: [
+              for (final t in _tabs)
+                NavigationDestination(icon: Icon(t.$1), label: t.$2),
+            ],
+          ),
+        );
+      },
     );
   }
 }

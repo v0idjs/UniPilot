@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/app_database.dart';
 import '../../core/db/providers.dart';
+import '../../widgets/brand_logo.dart';
 
 class DeadlineListScreen extends ConsumerWidget {
   const DeadlineListScreen({super.key});
@@ -33,7 +34,13 @@ class DeadlineListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(assignmentsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Deadlines')),
+      appBar: AppBar(
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: BrandLogo(size: 28),
+        ),
+        title: const Text('Deadlines'),
+      ),
       body: items.when(
         data: (list) {
           if (list.isEmpty) {

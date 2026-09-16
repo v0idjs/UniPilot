@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/app_database.dart';
 import '../../core/db/providers.dart';
+import '../../widgets/brand_logo.dart';
 import 'calculator.dart';
 import 'grading_scales.dart';
 
@@ -35,7 +36,13 @@ class GpaScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final semesters = ref.watch(semestersProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('GPA Calculator')),
+      appBar: AppBar(
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: BrandLogo(size: 28),
+        ),
+        title: const Text('GPA Calculator'),
+      ),
       body: semesters.when(
         data: (list) {
           if (list.isEmpty) {

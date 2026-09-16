@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/app_database.dart';
 import '../../core/db/providers.dart';
 import '../../core/utils/time.dart';
+import '../../widgets/app_error_view.dart';
+import '../../widgets/brand_logo.dart';
+import '../../widgets/empty_state.dart';
 import '../../widgets/next_class_card.dart';
 import 'schedule_service.dart';
 
@@ -46,7 +49,13 @@ class ScheduleScreen extends ConsumerWidget {
     final coursesAsync = ref.watch(coursesProvider);
     final entriesAsync = ref.watch(entriesProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Schedule')),
+      appBar: AppBar(
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: BrandLogo(size: 28),
+        ),
+        title: const Text('Schedule'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -65,9 +74,13 @@ class ScheduleScreen extends ConsumerWidget {
           coursesAsync.when(
             data: (courses) {
               if (courses.isEmpty) {
-                return const _PlaceholderCard(
-                  title: 'Daily View',
-                  subtitle: 'Today\u2019s classes will appear here',
+                return EmptyState(
+                  icon: Icons.event_note,
+                  title: 'No courses yet',
+                  subtitle:
+                      'Add your first course to build your schedule',
+                  actionLabel: 'Add course',
+                  onAction: () => _showCourseForm(context),
                 );
               }
               return Column(
@@ -91,12 +104,9 @@ class ScheduleScreen extends ConsumerWidget {
                 title: Text('Loading courses'),
               ),
             ),
-            error: (e, _) => Card(
-              child: ListTile(
-                leading: const Icon(Icons.error),
-                title: const Text('Could not load courses'),
-                subtitle: Text('$e'),
-              ),
+            error: (e, _) => AppErrorView(
+              message: 'Could not load courses: $e',
+              onRetry: () => ref.invalidate(coursesProvider),
             ),
           ),
           const SizedBox(height: 12),
@@ -108,9 +118,10 @@ class ScheduleScreen extends ConsumerWidget {
           entriesAsync.when(
             data: (entries) {
               if (entries.isEmpty) {
-                return const _PlaceholderCard(
-                  title: 'Weekly Grid',
-                  subtitle: 'Mon–Sun grid with time slots',
+                return const EmptyState(
+                  icon: Icons.calendar_view_week,
+                  title: 'No time slots yet',
+                  subtitle: 'Open a course to add weekly time slots',
                 );
               }
               return coursesAsync.when(
@@ -144,12 +155,9 @@ class ScheduleScreen extends ConsumerWidget {
               );
             },
             loading: () => const SizedBox.shrink(),
-            error: (e, _) => Card(
-              child: ListTile(
-                leading: const Icon(Icons.error),
-                title: const Text('Could not load time slots'),
-                subtitle: Text('$e'),
-              ),
+            error: (e, _) => AppErrorView(
+              message: 'Could not load time slots: $e',
+              onRetry: () => ref.invalidate(entriesProvider),
             ),
           ),
         ],
@@ -550,22 +558,6 @@ class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
         ),
         const SizedBox(height: 12),
       ]),
-    );
-  }
-}
-
-class _PlaceholderCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  const _PlaceholderCard({required this.title, required this.subtitle});
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(subtitle),
-        leading: const Icon(Icons.calendar_view_week),
-      ),
     );
   }
 }
