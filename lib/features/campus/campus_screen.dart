@@ -36,9 +36,10 @@ class _CampusScreenState extends State<CampusScreen> {
                     context: context,
                     builder: (ctx) => Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                           const Text(
                             'Room details',
                             style: TextStyle(
@@ -74,7 +75,8 @@ class _CampusScreenState extends State<CampusScreen> {
                               subtitle: Text(r.notes!),
                             ),
                           const SizedBox(height: 12),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
