@@ -15,6 +15,9 @@ void main() {
     await tester.tap(find.textContaining('A101').first);
     await _pump(tester);
 
-    expect(find.textContaining('Near main entrance'), findsOneWidget);
+    // The sheet title only exists once details open; the room notes also
+    // appear in the list, so assert on the sheet instead.
+    expect(find.text('Room details'), findsOneWidget);
+    expect(find.text('Near main entrance'), findsWidgets);
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/db/app_database.dart';
 import '../../core/db/providers.dart';
 
 class DeadlineListScreen extends ConsumerWidget {
@@ -11,8 +12,20 @@ class DeadlineListScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Add Deadline'),
         content: const _AddDeadlineForm(),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _showDeadlineDetail(BuildContext context, Assignment item) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => _DeadlineDetailDialog(item: item),
     );
   }
 
@@ -33,9 +46,35 @@ class DeadlineListScreen extends ConsumerWidget {
               final a = list[i];
               return Card(
                 child: ListTile(
-                  leading: const Icon(Icons.task_alt),
-                  title: Text(a.title),
-                  subtitle: Text('Due ${a.dueAt.toLocal().toString().split(' ')[0]}'),
+                  leading: IconButton(
+                    icon: Icon(
+                      a.completed
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                    ),
+                    tooltip: a.completed
+                        ? 'Mark incomplete'
+                        : 'Mark complete',
+                    onPressed: () {
+                      ref.read(dbProvider).setAssignmentCompleted(
+                            id: a.id,
+                            completed: !a.completed,
+                          );
+                    },
+                  ),
+                  title: Text(
+                    a.title,
+                    style: a.completed
+                        ? const TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                          )
+                        : null,
+                  ),
+                  subtitle: Text(
+                    'Due ${a.dueAt.toLocal().toString().split(' ')[0]}'
+                    '${a.completed ? ' • Completed' : ''}',
+                  ),
+                  onTap: () => _showDeadlineDetail(context, a),
                 ),
               );
             },
@@ -49,6 +88,50 @@ class DeadlineListScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_task),
         label: const Text('Add Deadline'),
       ),
+    );
+  }
+}
+
+class _DeadlineDetailDialog extends ConsumerWidget {
+  final Assignment item;
+  const _DeadlineDetailDialog({required this.item});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AlertDialog(
+      title: Text(item.title),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text('Due ${item.dueAt.toLocal().toString().split(' ')[0]}'),
+        const SizedBox(height: 4),
+        Text(item.completed ? 'Status: Completed' : 'Status: Open'),
+      ]),
+      actions: [
+        TextButton(
+          onPressed: () async {
+            await ref.read(dbProvider).setAssignmentCompleted(
+                  id: item.id,
+                  completed: !item.completed,
+                );
+            if (!context.mounted) return;
+            Navigator.pop(context);
+          },
+          child: Text(item.completed ? 'Mark incomplete' : 'Mark complete'),
+        ),
+        TextButton(
+          onPressed: () async {
+            await ref.read(dbProvider).deleteAssignment(item.id);
+            if (!context.mounted) return;
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Deadline deleted')),
+            );
+          },
+          child: const Text('Delete'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
     );
   }
 }
@@ -72,14 +155,27 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
   @override
   Widget build(BuildContext context) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      TextField(controller: _title, decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder())),
+      TextField(
+        controller: _title,
+        decoration: const InputDecoration(
+          labelText: 'Title',
+          border: OutlineInputBorder(),
+        ),
+      ),
       const SizedBox(height: 12),
       FilledButton(
         onPressed: () async {
-          final picked = await showDatePicker(context: context, initialDate: DateTime.now().add(const Duration(days: 1)), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365)));
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now().add(const Duration(days: 1)),
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 365)),
+          );
           if (picked != null) setState(() => _due = picked);
         },
-        child: Text(_due == null ? 'Pick due date' : _due.toString().split(' ')[0]),
+        child: Text(
+          _due == null ? 'Pick due date' : _due.toString().split(' ')[0],
+        ),
       ),
       const SizedBox(height: 12),
       FilledButton(
@@ -87,10 +183,13 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
             ? null
             : () async {
                 if (_title.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter title')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter title')),
+                  );
                   return;
                 }
-                final due = _due ?? DateTime.now().add(const Duration(days: 1));
+                final due =
+                    _due ?? DateTime.now().add(const Duration(days: 1));
                 setState(() => _saving = true);
                 try {
                   await ref.read(dbProvider).createAssignment(
@@ -99,7 +198,11 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
                       );
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Deadline "${_title.text.trim()}" saved offline')),
+                    SnackBar(
+                      content: Text(
+                        'Deadline "${_title.text.trim()}" saved offline',
+                      ),
+                    ),
                   );
                   Navigator.pop(context);
                 } catch (e) {

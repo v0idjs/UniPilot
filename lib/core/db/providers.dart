@@ -19,3 +19,12 @@ final assignmentsProvider = StreamProvider<List<Assignment>>((ref) {
 final semestersProvider = StreamProvider<List<Semester>>((ref) {
   return ref.watch(dbProvider).watchSemesters();
 });
+
+final entriesProvider = StreamProvider<List<ScheduleEntry>>((ref) {
+  return ref.watch(dbProvider).watchEntries();
+});
+
+final gradesProvider =
+    StreamProvider.family<List<CourseGrade>, String>((ref, semesterId) {
+  return ref.watch(dbProvider).watchGrades(semesterId);
+});

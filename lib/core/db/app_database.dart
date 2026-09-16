@@ -53,6 +53,58 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
   }
 
   @override
+  Future<void> updateCourse({
+    required String id,
+    required String code,
+    required String name,
+  }) async {
+    await (update(courses)..where((c) => c.id.equals(id))).write(
+      CoursesCompanion(
+        code: Value(code),
+        name: Value(name),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteCourse(String id) async {
+    await (delete(courses)..where((c) => c.id.equals(id))).go();
+  }
+
+  @override
+  Stream<List<ScheduleEntry>> watchEntries() =>
+      (select(scheduleEntries)
+            ..orderBy([
+              (e) => OrderingTerm.asc(e.dayOfWeek),
+              (e) => OrderingTerm.asc(e.startMinutes),
+            ]))
+          .watch();
+
+  @override
+  Future<int> createEntry({
+    required String courseId,
+    required int dayOfWeek,
+    required int startMinutes,
+    required int endMinutes,
+  }) {
+    return into(scheduleEntries).insert(
+      ScheduleEntriesCompanion.insert(
+        id: _uuid.v4(),
+        courseId: courseId,
+        dayOfWeek: dayOfWeek,
+        startMinutes: startMinutes,
+        endMinutes: endMinutes,
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteEntry(String id) async {
+    await (delete(scheduleEntries)..where((e) => e.id.equals(id))).go();
+  }
+
+  @override
   Stream<List<Assignment>> watchAssignments() =>
       (select(assignments)..orderBy([(a) => OrderingTerm.asc(a.dueAt)])).watch();
 
@@ -64,6 +116,24 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
   }
 
   @override
+  Future<void> setAssignmentCompleted({
+    required String id,
+    required bool completed,
+  }) async {
+    await (update(assignments)..where((a) => a.id.equals(id))).write(
+      AssignmentsCompanion(
+        completed: Value(completed),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteAssignment(String id) async {
+    await (delete(assignments)..where((a) => a.id.equals(id))).go();
+  }
+
+  @override
   Stream<List<Semester>> watchSemesters() =>
       (select(semesters)..orderBy([(s) => OrderingTerm.asc(s.name)])).watch();
 
@@ -72,5 +142,40 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
     return into(semesters).insert(
       SemestersCompanion.insert(id: _uuid.v4(), name: name),
     );
+  }
+
+  @override
+  Future<void> deleteSemester(String id) async {
+    await (delete(semesters)..where((s) => s.id.equals(id))).go();
+  }
+
+  @override
+  Stream<List<CourseGrade>> watchGrades(String semesterId) =>
+      (select(courseGrades)
+            ..where((g) => g.semesterId.equals(semesterId))
+            ..orderBy([(g) => OrderingTerm.asc(g.courseName)]))
+          .watch();
+
+  @override
+  Future<int> createGrade({
+    required String semesterId,
+    required String courseName,
+    required String grade,
+    required double credits,
+  }) {
+    return into(courseGrades).insert(
+      CourseGradesCompanion.insert(
+        id: _uuid.v4(),
+        semesterId: semesterId,
+        courseName: courseName,
+        grade: grade,
+        credits: Value(credits),
+      ),
+    );
+  }
+
+  @override
+  Future<void> deleteGrade(String id) async {
+    await (delete(courseGrades)..where((g) => g.id.equals(id))).go();
   }
 }

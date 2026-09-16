@@ -1,35 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/db/app_database.dart';
 import '../../core/db/providers.dart';
+import '../../core/utils/time.dart';
 import '../../widgets/next_class_card.dart';
+import 'schedule_service.dart';
+
+const _dayNames = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
 
 class ScheduleScreen extends ConsumerWidget {
   const ScheduleScreen({super.key});
 
-  void _showAddCourse(BuildContext context) {
+  void _showCourseForm(BuildContext context, {Course? course}) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: const _AddCourseSheet(),
+        child: _CourseFormSheet(course: course),
+      ),
+    );
+  }
+
+  void _showCourseDetail(BuildContext context, Course course) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: _CourseDetailSheet(course: course),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final courses = ref.watch(coursesProvider);
+    final coursesAsync = ref.watch(coursesProvider);
+    final entriesAsync = ref.watch(entriesProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Schedule')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const NextClassCard(slot: null),
+          coursesAsync.when(
+            data: (courses) => entriesAsync.when(
+              data: (entries) => NextClassCard(
+                slot: _nextSlot(courses, entries),
+              ),
+              loading: () => const NextClassCard(slot: null),
+              error: (_, __) => const NextClassCard(slot: null),
+            ),
+            loading: () => const NextClassCard(slot: null),
+            error: (_, __) => const NextClassCard(slot: null),
+          ),
           const SizedBox(height: 16),
-          courses.when(
-            data: (items) {
-              if (items.isEmpty) {
+          coursesAsync.when(
+            data: (courses) {
+              if (courses.isEmpty) {
                 return const _PlaceholderCard(
                   title: 'Daily View',
                   subtitle: 'Today\u2019s classes will appear here',
@@ -37,12 +72,14 @@ class ScheduleScreen extends ConsumerWidget {
               }
               return Column(
                 children: [
-                  for (final c in items)
+                  for (final c in courses)
                     Card(
                       child: ListTile(
                         leading: const Icon(Icons.book),
                         title: Text('${c.code} — ${c.name}'),
-                        subtitle: c.room == null ? null : Text(c.room!),
+                        subtitle:
+                            c.room == null ? null : Text(c.room!),
+                        onTap: () => _showCourseDetail(context, c),
                       ),
                     ),
                 ],
@@ -63,14 +100,62 @@ class ScheduleScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const _PlaceholderCard(
-            title: 'Weekly Grid',
-            subtitle: 'Mon–Sun grid with time slots',
+          const Text(
+            'Weekly',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          entriesAsync.when(
+            data: (entries) {
+              if (entries.isEmpty) {
+                return const _PlaceholderCard(
+                  title: 'Weekly Grid',
+                  subtitle: 'Mon–Sun grid with time slots',
+                );
+              }
+              return coursesAsync.when(
+                data: (courses) {
+                  final codeById = {
+                    for (final c in courses) c.id: c.code,
+                  };
+                  return Column(
+                    children: [
+                      for (final e in entries)
+                        Card(
+                          child: ListTile(
+                            leading:
+                                const Icon(Icons.calendar_view_week),
+                            title: Text(
+                              '${_dayNames[e.dayOfWeek - 1]} '
+                              '${formatMinutes(e.startMinutes)}–'
+                              '${formatMinutes(e.endMinutes)}',
+                            ),
+                            subtitle: Text(
+                              codeById[e.courseId] ?? 'Course',
+                            ),
+                            trailing: _EntryDeleteButton(entry: e),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (e, _) => Card(
+              child: ListTile(
+                leading: const Icon(Icons.error),
+                title: const Text('Could not load time slots'),
+                subtitle: Text('$e'),
+              ),
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddCourse(context),
+        onPressed: () => _showCourseForm(context),
         icon: const Icon(Icons.add),
         label: const Text('Add Course'),
       ),
@@ -78,16 +163,144 @@ class ScheduleScreen extends ConsumerWidget {
   }
 }
 
-class _AddCourseSheet extends ConsumerStatefulWidget {
-  const _AddCourseSheet();
-  @override
-  ConsumerState<_AddCourseSheet> createState() => _AddCourseSheetState();
+ScheduleSlot? _nextSlot(List<Course> courses, List<ScheduleEntry> entries) {
+  final byId = {for (final c in courses) c.id: c};
+  final slots = <ScheduleSlot>[];
+  for (final e in entries) {
+    final c = byId[e.courseId];
+    if (c == null) continue;
+    slots.add(
+      ScheduleSlot(
+        id: e.id,
+        courseId: e.courseId,
+        courseCode: c.code,
+        courseName: c.name,
+        dayOfWeek: e.dayOfWeek,
+        startMinutes: e.startMinutes,
+        endMinutes: e.endMinutes,
+        room: e.room,
+      ),
+    );
+  }
+  return nextClass(slots, DateTime.now());
 }
 
-class _AddCourseSheetState extends ConsumerState<_AddCourseSheet> {
-  final _code = TextEditingController();
-  final _name = TextEditingController();
+class _EntryDeleteButton extends ConsumerWidget {
+  final ScheduleEntry entry;
+  const _EntryDeleteButton({required this.entry});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return IconButton(
+      icon: const Icon(Icons.delete_outline),
+      tooltip: 'Delete time slot',
+      onPressed: () async {
+        await ref.read(dbProvider).deleteEntry(entry.id);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Time slot deleted')),
+        );
+      },
+    );
+  }
+}
+
+class _CourseDetailSheet extends ConsumerWidget {
+  final Course course;
+  const _CourseDetailSheet({required this.course});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(
+          course.code,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Text(course.name),
+        if (course.room != null) ...[
+          const SizedBox(height: 4),
+          Text('Room ${course.room!}'),
+        ],
+        const SizedBox(height: 16),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (ctx) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                    ),
+                    child: _CourseFormSheet(course: course),
+                  ),
+                );
+              },
+              child: const Text('Edit'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (ctx) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                    ),
+                    child: _TimeSlotSheet(course: course),
+                  ),
+                );
+              },
+              child: const Text('Add time slot'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: FilledButton(
+              onPressed: () async {
+                await ref.read(dbProvider).deleteCourse(course.id);
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Course deleted')),
+                );
+              },
+              child: const Text('Delete'),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 12),
+      ]),
+    );
+  }
+}
+
+class _CourseFormSheet extends ConsumerStatefulWidget {
+  final Course? course;
+  const _CourseFormSheet({this.course});
+  @override
+  ConsumerState<_CourseFormSheet> createState() => _CourseFormSheetState();
+}
+
+class _CourseFormSheetState extends ConsumerState<_CourseFormSheet> {
+  late final TextEditingController _code;
+  late final TextEditingController _name;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _code = TextEditingController(text: widget.course?.code ?? '');
+    _name = TextEditingController(text: widget.course?.name ?? '');
+  }
+
   @override
   void dispose() {
     _code.dispose();
@@ -97,32 +310,69 @@ class _AddCourseSheetState extends ConsumerState<_AddCourseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final editing = widget.course != null;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Text('Add Course', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          editing ? 'Edit Course' : 'Add Course',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
-        TextField(controller: _code, decoration: const InputDecoration(labelText: 'Course code', border: OutlineInputBorder())),
+        TextField(
+          controller: _code,
+          decoration: const InputDecoration(
+            labelText: 'Course code',
+            border: OutlineInputBorder(),
+          ),
+        ),
         const SizedBox(height: 12),
-        TextField(controller: _name, decoration: const InputDecoration(labelText: 'Course name', border: OutlineInputBorder())),
+        TextField(
+          controller: _name,
+          decoration: const InputDecoration(
+            labelText: 'Course name',
+            border: OutlineInputBorder(),
+          ),
+        ),
         const SizedBox(height: 16),
         FilledButton(
           onPressed: _saving
               ? null
               : () async {
                   if (_code.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter course code')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Enter course code')),
+                    );
                     return;
                   }
                   setState(() => _saving = true);
                   try {
-                    await ref.read(dbProvider).createCourse(
-                          code: _code.text.trim(),
-                          name: _name.text.trim().isEmpty ? _code.text.trim() : _name.text.trim(),
-                        );
+                    final db = ref.read(dbProvider);
+                    if (editing) {
+                      await db.updateCourse(
+                        id: widget.course!.id,
+                        code: _code.text.trim(),
+                        name: _name.text.trim().isEmpty
+                            ? _code.text.trim()
+                            : _name.text.trim(),
+                      );
+                    } else {
+                      await db.createCourse(
+                        code: _code.text.trim(),
+                        name: _name.text.trim().isEmpty
+                            ? _code.text.trim()
+                            : _name.text.trim(),
+                      );
+                    }
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Course ${_code.text.trim()} saved offline')),
+                      SnackBar(
+                        content: Text(
+                          editing
+                              ? 'Course updated'
+                              : 'Course ${_code.text.trim()} saved offline',
+                        ),
+                      ),
                     );
                     Navigator.pop(context);
                   } catch (e) {
@@ -134,7 +384,169 @@ class _AddCourseSheetState extends ConsumerState<_AddCourseSheet> {
                     if (mounted) setState(() => _saving = false);
                   }
                 },
-          child: Text(_saving ? 'Saving' : 'Save'),
+          child: Text(_saving ? 'Saving' : (editing ? 'Save changes' : 'Save')),
+        ),
+        const SizedBox(height: 12),
+      ]),
+    );
+  }
+}
+
+class _TimeSlotSheet extends ConsumerStatefulWidget {
+  final Course course;
+  const _TimeSlotSheet({required this.course});
+  @override
+  ConsumerState<_TimeSlotSheet> createState() => _TimeSlotSheetState();
+}
+
+class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
+  int _day = 1;
+  int _start = 540;
+  int _end = 600;
+  bool _saving = false;
+
+  Future<void> _pickTime(bool isStart) async {
+    final initial = TimeOfDay(
+      hour: (isStart ? _start : _end) ~/ 60,
+      minute: (isStart ? _start : _end) % 60,
+    );
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+    );
+    if (picked == null) return;
+    setState(() {
+      final minutes = picked.hour * 60 + picked.minute;
+      if (isStart) {
+        _start = minutes;
+        if (_end <= _start) _end = _start + 60;
+      } else {
+        _end = minutes;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(
+          'Time slot for ${widget.course.code}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<int>(
+          value: _day,
+          decoration: const InputDecoration(
+            labelText: 'Day',
+            border: OutlineInputBorder(),
+          ),
+          items: [
+            for (var i = 0; i < 7; i++)
+              DropdownMenuItem(value: i + 1, child: Text(_dayNames[i])),
+          ],
+          onChanged: (v) {
+            if (v != null) setState(() => _day = v);
+          },
+        ),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _pickTime(true),
+              child: Text('Start ${formatMinutes(_start)}'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _pickTime(false),
+              child: Text('End ${formatMinutes(_end)}'),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 16),
+        FilledButton(
+          onPressed: _saving
+              ? null
+              : () async {
+                  if (_end <= _start) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('End time must be after start time'),
+                      ),
+                    );
+                    return;
+                  }
+                  setState(() => _saving = true);
+                  try {
+                    final db = ref.read(dbProvider);
+                    final courses =
+                        ref.read(coursesProvider).valueOrNull ?? [];
+                    final entries =
+                        ref.read(entriesProvider).valueOrNull ?? [];
+                    final byId = {for (final c in courses) c.id: c};
+                    final slots = <ScheduleSlot>[];
+                    for (final e in entries) {
+                      final c = byId[e.courseId];
+                      if (c == null) continue;
+                      slots.add(
+                        ScheduleSlot(
+                          id: e.id,
+                          courseId: e.courseId,
+                          courseCode: c.code,
+                          courseName: c.name,
+                          dayOfWeek: e.dayOfWeek,
+                          startMinutes: e.startMinutes,
+                          endMinutes: e.endMinutes,
+                        ),
+                      );
+                    }
+                    final candidate = ScheduleSlot(
+                      id: 'new',
+                      courseId: widget.course.id,
+                      courseCode: widget.course.code,
+                      courseName: widget.course.name,
+                      dayOfWeek: _day,
+                      startMinutes: _start,
+                      endMinutes: _end,
+                    );
+                    final clash = detectConflicts([...slots, candidate]).any(
+                      (c) => c.a.id == 'new' || c.b.id == 'new',
+                    );
+                    if (clash) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Conflicts with an existing time slot',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    await db.createEntry(
+                      courseId: widget.course.id,
+                      dayOfWeek: _day,
+                      startMinutes: _start,
+                      endMinutes: _end,
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Time slot saved')),
+                    );
+                    Navigator.pop(context);
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Could not save slot: $e')),
+                    );
+                  } finally {
+                    if (mounted) setState(() => _saving = false);
+                  }
+                },
+          child: Text(_saving ? 'Saving' : 'Save slot'),
         ),
         const SizedBox(height: 12),
       ]),
@@ -143,10 +555,17 @@ class _AddCourseSheetState extends ConsumerState<_AddCourseSheet> {
 }
 
 class _PlaceholderCard extends StatelessWidget {
-  final String title; final String subtitle;
+  final String title;
+  final String subtitle;
   const _PlaceholderCard({required this.title, required this.subtitle});
   @override
   Widget build(BuildContext context) {
-    return Card(child: ListTile(title: Text(title), subtitle: Text(subtitle), leading: const Icon(Icons.calendar_view_week)));
+    return Card(
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(subtitle),
+        leading: const Icon(Icons.calendar_view_week),
+      ),
+    );
   }
 }

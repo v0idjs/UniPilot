@@ -31,6 +31,54 @@ class _CampusScreenState extends State<CampusScreen> {
                 leading: const Icon(Icons.room),
                 title: Text('${r.building} — ${r.room}'),
                 subtitle: Text([r.floor, r.notes].whereType<String>().join(' • ')),
+                onTap: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    builder: (ctx) => Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Room details',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.business),
+                            title: const Text('Building'),
+                            subtitle: Text(r.building),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.door_front_door),
+                            title: const Text('Room'),
+                            subtitle: Text(r.room),
+                          ),
+                          if (r.floor != null)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.layers),
+                              title: const Text('Floor'),
+                              subtitle: Text(r.floor!),
+                            ),
+                          if (r.notes != null)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.notes),
+                              title: const Text('Notes'),
+                              subtitle: Text(r.notes!),
+                            ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
