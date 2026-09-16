@@ -230,7 +230,7 @@ jobs:
           cat /tmp/changelog.txt >> /tmp/release_body.md
           cat >> /tmp/release_body.md << 'EOF'
 
-          #### 📦 Release Assets Attached
+          #### Release Assets
           - **Android APKs**:
             - `app-arm64-v8a-release.apk` (modern 64-bit devices)
             - `app-armeabi-v7a-release.apk` (32-bit devices)
@@ -238,7 +238,7 @@ jobs:
           - **Windows Desktop**:
             - `unipilot-windows.zip` (standalone Windows release)
 
-          #### 🛠️ Tech Stack
+          #### Tech Stack
           - Flutter 3.24.0 · Drift · Riverpod · go_router · flutter_local_notifications
           EOF
           cat /tmp/release_body.md

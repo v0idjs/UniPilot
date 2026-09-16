@@ -2,6 +2,30 @@
 
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
+## v0.1.0 — 2026-09-16
+### Added
+- Offline-first student hub with schedule management, deadline tracking, GPA calculation, and a campus directory
+- Daily and weekly schedule views with next-class highlight, manual course management, and CSV/ICS import with conflict detection
+- Deadline tracking with countdowns and local reminders ahead of due times
+- GPA calculator with per-semester and cumulative results across multiple grading scales, including what-if planning
+- Searchable campus room directory backed by bundled offline data
+- Native launcher icon derived from the brand mark for Android and Windows builds
+- Open-source documentation with contribution guidelines, code of conduct, and security policy
+
+### Changed
+- Desktop startup now opens a centered window with an opaque background and visible content on first paint
+- Adding a course, deadline, or semester now persists offline and appears in its list immediately with confirmation feedback
+- Release history consolidated into this single baseline, replacing the earlier pre-release sequence
+
+### Fixed
+- Transparent desktop window on launch that showed no content
+- Saved courses, deadlines, and semesters not appearing in their lists despite a save confirmation
+- Launcher icon generation now runs consistently for both mobile and desktop builds
+
+### Removed
+- Legacy pre-release tags and empty draft releases from the early setup phase
+- Redundant database adapter layer in favor of the direct native driver
+
 ## v1.0.15 — 2026-09-16
 ### Changed
 - Release notes: now per-version from `CHANGELOG.md` (extracted via `awk` in workflow) + `generate_release_notes` — each tag shows its own Added/Changed/Fixed instead of static template
