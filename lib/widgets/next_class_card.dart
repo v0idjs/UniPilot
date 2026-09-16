@@ -34,9 +34,11 @@ class NextClassCard extends StatelessWidget {
           child: Row(children: [
             const Icon(Icons.event_available, size: 32),
             const SizedBox(width: 12),
-            Text(
-              'No upcoming classes',
-              style: Theme.of(context).textTheme.titleMedium,
+            Expanded(
+              child: Text(
+                'No upcoming classes',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ]),
         ),
@@ -87,6 +89,8 @@ class NextClassCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${s.courseCode} — ${s.courseName}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: onIndigo,
                   fontWeight: FontWeight.w700,
@@ -111,9 +115,13 @@ class NextClassCard extends StatelessWidget {
               color: onIndigo.withOpacity(0.85),
             ),
             const SizedBox(width: 4),
-            Text(
-              s.room ?? 'TBA',
-              style: TextStyle(color: onIndigo.withOpacity(0.9)),
+            Expanded(
+              child: Text(
+                s.room ?? 'TBA',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: onIndigo.withOpacity(0.9)),
+              ),
             ),
           ]),
         ]),
