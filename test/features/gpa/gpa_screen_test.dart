@@ -1,14 +1,14 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:unipilot/core/db/app_database.dart';
 import 'package:unipilot/core/db/providers.dart';
 import 'package:unipilot/features/gpa/gpa_screen.dart';
 
+import '../../fakes/fake_database.dart';
+
 void main() {
   testWidgets('added semester appears in GPA screen', (tester) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final db = FakeUniPilotDatabase();
     addTearDown(db.close);
 
     await tester.pumpWidget(
@@ -35,5 +35,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.textContaining('Fall 2026'), findsWidgets);
+    // Flush the confirmation snackbar timer before teardown.
+    await tester.pump(const Duration(seconds: 5));
   });
 }

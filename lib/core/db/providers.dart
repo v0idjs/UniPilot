@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_database.dart';
+import 'database_api.dart';
 
-final dbProvider = Provider<AppDatabase>((ref) {
+final dbProvider = Provider<UniPilotDatabase>((ref) {
   final db = AppDatabase();
   ref.onDispose(db.close);
   return db;

@@ -1,12 +1,12 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unipilot/app.dart';
-import 'package:unipilot/core/db/app_database.dart';
 import 'package:unipilot/core/db/providers.dart';
+
+import 'fakes/fake_database.dart';
 
 void main() {
   testWidgets('UniPilotApp builds', (tester) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final db = FakeUniPilotDatabase();
     addTearDown(db.close);
     await tester.pumpWidget(
       UniPilotApp(overrides: [dbProvider.overrideWithValue(db)]),
