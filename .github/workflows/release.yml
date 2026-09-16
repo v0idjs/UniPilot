@@ -115,6 +115,9 @@ jobs:
         shell: bash
 
       - run: flutter pub get
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons || echo "launcher icons skipped (no png? check)"
+        shell: bash
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
       - run: flutter test --coverage || true
@@ -151,6 +154,9 @@ jobs:
         shell: pwsh
 
       - run: flutter pub get
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons || echo "launcher icons skipped"
+        shell: bash
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
         shell: bash

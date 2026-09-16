@@ -1,5 +1,11 @@
 # UniPilot — Your Personal University Co-Pilot
 
+[![CI](https://github.com/v0idjs/UniPilot/actions/workflows/ci.yml/badge.svg)](https://github.com/v0idjs/UniPilot/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/v0idjs/UniPilot?label=release)](https://github.com/v0idjs/UniPilot/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+![UniPilot Logo](assets/logo.svg)
+
 Offline-first Flutter app: schedule, deadlines, GPA, campus room finder. Single codebase → Android APK + Windows exe via GitHub Actions.
 
 ## Brand
@@ -34,9 +40,16 @@ test/            # unit + widget tests
 ```
 
 ## CI/CD
-Tag `v*` triggers `build-apk` (ubuntu) + `build-windows` (windows-latest). Both pinned to Flutter 3.24.0. See `docs/release.md`.
+Tag `v*` triggers `Release UniPilot` workflow (APK splits + Windows zip + auto release notes). See `docs/release.md`.
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). PRs welcome — please add tests.
+
+## License
+MIT — see [LICENSE](LICENSE).
 
 ## Docs
 - `docs/adr/001-stack.md`
 - `docs/import-format.md`
 - `docs/release.md`
+- `CHANGELOG.md`

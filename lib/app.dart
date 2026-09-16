@@ -9,6 +9,10 @@ import 'features/campus/campus_screen.dart';
 
 final _router = GoRouter(
   initialLocation: '/schedule',
+  errorBuilder: (context, state) => Scaffold(
+    appBar: AppBar(title: const Text('Not found')),
+    body: Center(child: Text('Route not found: ${state.uri}')),
+  ),
   routes: [
     ShellRoute(
       builder: (context, state, child) => AppScaffold(child: child),

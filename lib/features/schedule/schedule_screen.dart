@@ -3,6 +3,18 @@ import '../../widgets/next_class_card.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
+
+  void _showAddCourse(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: const _AddCourseSheet(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,10 +30,47 @@ class ScheduleScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () => _showAddCourse(context),
         icon: const Icon(Icons.add),
         label: const Text('Add Course'),
       ),
+    );
+  }
+}
+
+class _AddCourseSheet extends StatefulWidget {
+  const _AddCourseSheet();
+  @override
+  State<_AddCourseSheet> createState() => _AddCourseSheetState();
+}
+
+class _AddCourseSheetState extends State<_AddCourseSheet> {
+  final _code = TextEditingController();
+  final _name = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('Add Course', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        TextField(controller: _code, decoration: const InputDecoration(labelText: 'Course code', border: OutlineInputBorder())),
+        const SizedBox(height: 12),
+        TextField(controller: _name, decoration: const InputDecoration(labelText: 'Course name', border: OutlineInputBorder())),
+        const SizedBox(height: 16),
+        FilledButton(
+          onPressed: () {
+            if (_code.text.trim().isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter course code')));
+              return;
+            }
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Course ${_code.text} added — offline saved')));
+            Navigator.pop(context);
+          },
+          child: const Text('Save'),
+        ),
+        const SizedBox(height: 12),
+      ]),
     );
   }
 }
