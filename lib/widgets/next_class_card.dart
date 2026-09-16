@@ -64,7 +64,7 @@ class NextClassCard extends StatelessWidget {
             Text(
               'Next class',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: onIndigo.withValues(alpha: 0.85),
+                    color: onIndigo.withOpacity(0.85),
                   ),
             ),
             const Spacer(),
@@ -97,23 +97,23 @@ class NextClassCard extends StatelessWidget {
             Icon(
               Icons.access_time,
               size: 16,
-              color: onIndigo.withValues(alpha: 0.85),
+              color: onIndigo.withOpacity(0.85),
             ),
             const SizedBox(width: 4),
             Text(
               '${formatMinutes(s.startMinutes)} – ${formatMinutes(s.endMinutes)}',
-              style: TextStyle(color: onIndigo.withValues(alpha: 0.9)),
+              style: TextStyle(color: onIndigo.withOpacity(0.9)),
             ),
             const SizedBox(width: 12),
             Icon(
               Icons.room,
               size: 16,
-              color: onIndigo.withValues(alpha: 0.85),
+              color: onIndigo.withOpacity(0.85),
             ),
             const SizedBox(width: 4),
             Text(
               s.room ?? 'TBA',
-              style: TextStyle(color: onIndigo.withValues(alpha: 0.9)),
+              style: TextStyle(color: onIndigo.withOpacity(0.9)),
             ),
           ]),
         ]),

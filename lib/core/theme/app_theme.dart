@@ -36,17 +36,17 @@ ThemeData buildLightTheme() {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     chipTheme: base.chipTheme.copyWith(
-      backgroundColor: AppColors.indigoPrimary.withValues(alpha: 0.08),
+      backgroundColor: AppColors.indigoPrimary.withOpacity(0.08),
       selectedColor: AppColors.amberAccent,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.indigoPrimary.withValues(alpha: 0.04),
+      fillColor: AppColors.indigoPrimary.withOpacity(0.04),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: AppColors.indigoPrimary.withValues(alpha: 0.2),
+          color: AppColors.indigoPrimary.withOpacity(0.2),
         ),
       ),
       focusedBorder: OutlineInputBorder(
@@ -61,7 +61,7 @@ ThemeData buildLightTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surfaceLight,
-      indicatorColor: AppColors.amberAccent.withValues(alpha: 0.25),
+      indicatorColor: AppColors.amberAccent.withOpacity(0.25),
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
       ),
@@ -86,7 +86,7 @@ ThemeData buildLightTheme() {
       showDragHandle: true,
     ),
     dividerTheme: DividerThemeData(
-      color: AppColors.indigoPrimary.withValues(alpha: 0.12),
+      color: AppColors.indigoPrimary.withOpacity(0.12),
     ),
     textTheme: _buildTextTheme(base.textTheme),
   );
@@ -119,12 +119,12 @@ ThemeData buildDarkTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.04),
+      fillColor: Colors.white.withOpacity(0.04),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
         ),
       ),
       focusedBorder: OutlineInputBorder(
@@ -139,7 +139,7 @@ ThemeData buildDarkTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surfaceDark,
-      indicatorColor: AppColors.amberAccent.withValues(alpha: 0.3),
+      indicatorColor: AppColors.amberAccent.withOpacity(0.3),
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
       ),
@@ -164,7 +164,7 @@ ThemeData buildDarkTheme() {
       showDragHandle: true,
     ),
     dividerTheme: DividerThemeData(
-      color: Colors.white.withValues(alpha: 0.12),
+      color: Colors.white.withOpacity(0.12),
     ),
     textTheme: _buildTextTheme(base.textTheme),
   );

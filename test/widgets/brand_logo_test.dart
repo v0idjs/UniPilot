@@ -19,10 +19,10 @@ class _SvgBundle extends CachingAssetBundle {
 void main() {
   testWidgets('renders the brand mark with semantics and size', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
+      MaterialApp(
         home: DefaultAssetBundle(
           bundle: _SvgBundle(),
-          child: BrandLogo(size: 40),
+          child: const BrandLogo(size: 40),
         ),
       ),
     );

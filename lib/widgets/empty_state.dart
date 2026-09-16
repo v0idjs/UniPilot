@@ -25,7 +25,7 @@ class EmptyState extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 48, color: colors.primary.withValues(alpha: 0.6)),
+        Icon(icon, size: 48, color: colors.primary.withOpacity(0.6)),
         const SizedBox(height: 12),
         Text(
           title,
@@ -36,7 +36,7 @@ class EmptyState extends StatelessWidget {
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.7),
+                color: colors.onSurface.withOpacity(0.7),
               ),
           textAlign: TextAlign.center,
         ),
