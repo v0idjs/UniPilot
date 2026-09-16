@@ -2,6 +2,13 @@
 
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
+## v1.0.15 — 2026-09-16
+### Changed
+- Release notes: now per-version from `CHANGELOG.md` (extracted via `awk` in workflow) + `generate_release_notes` — each tag shows its own Added/Changed/Fixed instead of static template
+
+### Fixed
+- `README.md`: logo reduced to 140px via `<img width="140">` (was full-width `![logo]`)
+
 ## v1.0.14 — 2026-09-16
 ### Added
 - MIT `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`
