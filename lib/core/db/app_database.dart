@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'package:drift/native.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'tables.dart';
 
@@ -7,9 +10,17 @@ part 'app_database.g.dart';
 
 const _uuid = Uuid();
 
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dir.path, 'unipilot_db.sqlite'));
+    return NativeDatabase.createInBackground(file);
+  });
+}
+
 @DriftDatabase(tables: [Courses, ScheduleEntries, Assignments, Semesters, CourseGrades, CampusRooms])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(driftDatabase(name: 'unipilot_db'));
+  AppDatabase() : super(_openConnection());
 
   AppDatabase.forTesting(super.executor);
 
