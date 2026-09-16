@@ -2,6 +2,23 @@
 
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
+## v0.2.0 — 2026-09-16
+### Added
+- Course details with editing, deletion, and per-course weekly time slots with automatic conflict detection
+- Weekly overview that renders real scheduled time slots grouped by day, with next-class highlight driven by actual data
+- Deadline completion toggle directly from the list, plus detail view with completion and deletion actions
+- Semester details showing computed GPA, grade management per course, and semester deletion
+- Campus room details with building, floor, and notes on tap
+
+### Changed
+- Desktop startup now paints content immediately and treats window setup as best effort, so a failing window call can no longer leave a blank screen
+- Every saved row across schedule, deadlines, GPA, and campus now responds to taps with details and actions
+
+### Fixed
+- List rows doing nothing when tapped across all four sections
+- Desktop window staying fully white with no painted content
+- Detail sheet overflow on compact screen sizes
+
 ## v0.1.0 — 2026-09-16
 ### Added
 - Offline-first student hub with schedule management, deadline tracking, GPA calculation, and a campus directory
