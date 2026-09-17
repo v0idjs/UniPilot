@@ -13,7 +13,16 @@ void main() {
 
     final config = File('flutter_launcher_icons.yaml').readAsStringSync();
     expect(config, contains('assets/icon/app_icon.png'));
-    // Android adaptive foreground must reference the exact vector source.
-    expect(config, contains('assets/logo.svg'));
+    // The launcher tool decodes raster images only: the adaptive
+    // foreground must be the PNG master derived from the vector above,
+    // never the SVG source itself (which silently skips icon output).
+    expect(
+      config,
+      contains('adaptive_icon_foreground: "assets/icon/app_icon.png"'),
+    );
+    expect(
+      config.contains('adaptive_icon_foreground: "assets/logo.svg"'),
+      isFalse,
+    );
   });
 }
