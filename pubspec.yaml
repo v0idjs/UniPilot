@@ -25,9 +25,6 @@ dependencies:
   csv: ^6.0.0
   timezone: ^0.9.4
   flutter_local_notifications: ^17.1.2
-  file_picker: ^9.2.1
-  share_plus: ^10.1.0
-  connectivity_plus: ^6.0.5
   flutter_svg: ^2.0.10+1
   window_manager: ^0.4.2
 

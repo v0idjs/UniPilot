@@ -90,7 +90,8 @@ class DeadlineListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Could not load deadlines: $e')),
+        error: (_, __) =>
+            Center(child: Text('Could not load deadlines. Please retry.')),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddDeadline(context),
@@ -167,6 +168,7 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
     return Column(mainAxisSize: MainAxisSize.min, children: [
       TextField(
         controller: _title,
+        maxLength: 60,
         decoration: const InputDecoration(
           labelText: 'Title',
           border: OutlineInputBorder(),
@@ -216,9 +218,14 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
                   );
                   Navigator.pop(context);
                 } catch (e) {
+                  debugPrint('Save deadline failed: $e');
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Could not save deadline: $e')),
+                    const SnackBar(
+                      content: Text(
+                        'Could not save deadline. Please try again.',
+                      ),
+                    ),
                   );
                 } finally {
                   if (mounted) setState(() => _saving = false);

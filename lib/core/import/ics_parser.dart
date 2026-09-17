@@ -17,10 +17,17 @@ class IcsParseResult {
 }
 
 class IcsParser {
+  static const maxInputBytes = 512 * 1024;
+  static const maxEvents = 1000;
+  static const maxRecurrences = 52;
+
   IcsParseResult parse(String text) {
     final errors = <String>[];
     final events = <IcsEvent>[];
     if (text.trim().isEmpty) return const IcsParseResult(events: [], errors: ['Empty ICS']);
+    if (text.length > maxInputBytes) {
+      return const IcsParseResult(events: [], errors: ['File too large (max 512KB)']);
+    }
     // Unfold lines (RFC 5545)
     final unfolded = text.replaceAll('\r\n ', '').replaceAll('\n ', '').replaceAll('\r\n\t', '').replaceAll('\n\t', '');
     final lines = unfolded.split(RegExp(r'\r?\n')).map((e) => e.trim()).toList();
@@ -48,6 +55,13 @@ class IcsParser {
         }
         current[key] = value;
       }
+    }
+    if (events.length > maxEvents) {
+      errors.add('Truncated to $maxEvents events');
+      return IcsParseResult(
+        events: events.take(maxEvents).toList(),
+        errors: errors,
+      );
     }
     if (events.isEmpty && errors.isEmpty) errors.add('No VEVENT found');
     return IcsParseResult(events: events, errors: errors);
@@ -132,8 +146,10 @@ class IcsParser {
     if (!rrule.contains('FREQ=WEEKLY')) return [e];
     final countMatch = RegExp(r'COUNT=(\d+)').firstMatch(rrule);
     final untilMatch = RegExp(r'UNTIL=([0-9T Z]+)').firstMatch(rrule);
-    int count = countMatch != null ? int.parse(countMatch.group(1)!) : 1;
-    if (count > 52) count = 52; // cap to avoid explosion
+    // tryParse: an over-long digit run overflows int and yields null,
+    // which we clamp to the maximum instead of throwing.
+    int count = int.tryParse(countMatch?.group(1) ?? '1') ?? maxRecurrences;
+    count = count.clamp(1, maxRecurrences);
     if (count <= 1 && untilMatch != null) {
       final until = _parseDate(untilMatch.group(1)!.trim(), null);
       if (until != null) {

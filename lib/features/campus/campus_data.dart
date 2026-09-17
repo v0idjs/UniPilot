@@ -6,13 +6,29 @@ class CampusRoom {
   final String? notes;
   const CampusRoom({required this.id, required this.building, required this.room, this.floor, this.notes});
 
-  factory CampusRoom.fromJson(Map<String, dynamic> j) => CampusRoom(
-        id: j['id'] as String,
-        building: j['building'] as String,
-        room: j['room'] as String,
-        floor: j['floor'] as String?,
-        notes: j['notes'] as String?,
-      );
+  factory CampusRoom.fromJson(Map<String, dynamic> j) {
+    final id = j['id'];
+    final building = j['building'];
+    final room = j['room'];
+    final floor = j['floor'];
+    final notes = j['notes'];
+    if (id is! String || building is! String || room is! String) {
+      throw FormatException('Invalid campus room entry');
+    }
+    if (floor != null && floor is! String) {
+      throw FormatException('Invalid campus room floor');
+    }
+    if (notes != null && notes is! String) {
+      throw FormatException('Invalid campus room notes');
+    }
+    return CampusRoom(
+      id: id,
+      building: building,
+      room: room,
+      floor: floor as String?,
+      notes: notes as String?,
+    );
+  }
 }
 
 /// Stub local data — replace with real campus JSON in assets/campus/rooms.json

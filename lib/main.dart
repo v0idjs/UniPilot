@@ -9,21 +9,27 @@ Future<void> main() async {
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
   };
-  ErrorWidget.builder = (details) => Material(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.error_outline, size: 48, color: Colors.red),
-        const SizedBox(height: 12),
-        const Text(
-          'Something went wrong',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Text('${details.exception}'),
-      ]),
-    ),
-  );
+  ErrorWidget.builder = (details) {
+    assert(() {
+      debugPrint(details.toString());
+      return true;
+    }());
+    return const Material(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.error_outline, size: 48, color: Colors.red),
+          SizedBox(height: 12),
+          Text(
+            'Something went wrong',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text('Please restart the app.'),
+        ]),
+      ),
+    );
+  };
   // Paint content first: a throwing or hanging window API call must never
   // block startup, otherwise the desktop window stays blank.
   runApp(const UniPilotApp());

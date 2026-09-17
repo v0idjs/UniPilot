@@ -68,7 +68,8 @@ class GpaScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Could not load semesters: $e')),
+        error: (_, __) =>
+            Center(child: Text('Could not load semesters. Please retry.')),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddSemester(context),
@@ -128,7 +129,7 @@ class _SemesterDetailSheet extends ConsumerWidget {
             );
           },
           loading: () => const Text('Loading grades'),
-          error: (e, _) => Text('Could not load grades: $e'),
+          error: (_, __) => Text('Could not load grades. Please retry.'),
         ),
         const SizedBox(height: 8),
         gradesAsync.when(
@@ -215,6 +216,7 @@ class _GradeFormSheetState extends ConsumerState<_GradeFormSheet> {
         const SizedBox(height: 12),
         TextField(
           controller: _course,
+          maxLength: 120,
           decoration: const InputDecoration(
             labelText: 'Course',
             border: OutlineInputBorder(),
@@ -225,6 +227,7 @@ class _GradeFormSheetState extends ConsumerState<_GradeFormSheet> {
           Expanded(
             child: TextField(
               controller: _grade,
+              maxLength: 10,
               decoration: const InputDecoration(
                 labelText: 'Grade',
                 border: OutlineInputBorder(),
@@ -265,9 +268,11 @@ class _GradeFormSheetState extends ConsumerState<_GradeFormSheet> {
                   }
                   final credits =
                       double.tryParse(_credits.text.trim()) ?? -1;
-                  if (credits <= 0) {
+                  if (credits <= 0 || credits > 100) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Enter valid credits')),
+                      const SnackBar(
+                        content: Text('Enter valid credits (max 100)'),
+                      ),
                     );
                     return;
                   }
@@ -285,9 +290,14 @@ class _GradeFormSheetState extends ConsumerState<_GradeFormSheet> {
                     );
                     Navigator.pop(context);
                   } catch (e) {
+                    debugPrint('Save grade failed: $e');
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Could not save grade: $e')),
+                      const SnackBar(
+                        content: Text(
+                          'Could not save grade. Please try again.',
+                        ),
+                      ),
                     );
                   } finally {
                     if (mounted) setState(() => _saving = false);
@@ -323,6 +333,7 @@ class _AddSemesterSheetState extends ConsumerState<_AddSemesterSheet> {
       const SizedBox(height: 12),
       TextField(
         controller: _name,
+        maxLength: 120,
         decoration: const InputDecoration(
           labelText: 'Semester name',
           hintText: 'Fall 2026',
@@ -349,9 +360,14 @@ class _AddSemesterSheetState extends ConsumerState<_AddSemesterSheet> {
                   );
                   Navigator.pop(context);
                 } catch (e) {
+                  debugPrint('Save semester failed: $e');
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Could not save semester: $e')),
+                    const SnackBar(
+                      content: Text(
+                        'Could not save semester. Please try again.',
+                      ),
+                    ),
                   );
                 } finally {
                   if (mounted) setState(() => _saving = false);

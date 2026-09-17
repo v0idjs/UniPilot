@@ -57,11 +57,17 @@ class TimetableCsvParser {
     'sun': 7, 'sunday': 7, '7': 7,
   };
 
+  static const maxInputBytes = 512 * 1024;
+  static const maxRows = 2000;
+
   CsvParseResult parse(String csvText) {
     final errors = <String>[];
     final rows = <CsvImportRow>[];
     if (csvText.trim().isEmpty) {
       return const CsvParseResult(rows: [], errors: ['Empty CSV']);
+    }
+    if (csvText.length > maxInputBytes) {
+      return const CsvParseResult(rows: [], errors: ['File too large (max 512KB)']);
     }
     // Auto-detect delimiter: semicolon vs comma
     final delimiter = csvText.contains(';') && !csvText.contains(',') ? ';' : ',';
@@ -103,7 +109,12 @@ class TimetableCsvParser {
       errors.add('Missing required columns. Need: code, day, start, end. Found: ${header.join(', ')}');
       return CsvParseResult(rows: [], errors: errors);
     }
-    for (var r = 1; r < table.length; r++) {
+    var lastRow = table.length;
+    if (table.length - 1 > maxRows) {
+      errors.add('Truncated to $maxRows rows');
+      lastRow = maxRows + 1; // header plus cap
+    }
+    for (var r = 1; r < lastRow; r++) {
       final row = table[r];
       if (row.every((e) => e.toString().trim().isEmpty)) continue;
       try {

@@ -106,8 +106,8 @@ class ScheduleScreen extends ConsumerWidget {
                 title: Text('Loading courses'),
               ),
             ),
-            error: (e, _) => AppErrorView(
-              message: 'Could not load courses: $e',
+            error: (_, __) => AppErrorView(
+              message: 'Could not load courses. Please retry.',
               onRetry: () => ref.invalidate(coursesProvider),
             ),
           ),
@@ -157,8 +157,8 @@ class ScheduleScreen extends ConsumerWidget {
               );
             },
             loading: () => const SizedBox.shrink(),
-            error: (e, _) => AppErrorView(
-              message: 'Could not load time slots: $e',
+            error: (_, __) => AppErrorView(
+              message: 'Could not load time slots. Please retry.',
               onRetry: () => ref.invalidate(entriesProvider),
             ),
           ),
@@ -331,6 +331,7 @@ class _CourseFormSheetState extends ConsumerState<_CourseFormSheet> {
         const SizedBox(height: 12),
         TextField(
           controller: _code,
+          maxLength: 60,
           decoration: const InputDecoration(
             labelText: 'Course code',
             border: OutlineInputBorder(),
@@ -339,6 +340,7 @@ class _CourseFormSheetState extends ConsumerState<_CourseFormSheet> {
         const SizedBox(height: 12),
         TextField(
           controller: _name,
+          maxLength: 120,
           decoration: const InputDecoration(
             labelText: 'Course name',
             border: OutlineInputBorder(),
@@ -386,9 +388,14 @@ class _CourseFormSheetState extends ConsumerState<_CourseFormSheet> {
                     );
                     Navigator.pop(context);
                   } catch (e) {
+                    debugPrint('Save course failed: $e');
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Could not save course: $e')),
+                      const SnackBar(
+                        content: Text(
+                          'Could not save course. Please try again.',
+                        ),
+                      ),
                     );
                   } finally {
                     if (mounted) setState(() => _saving = false);
@@ -548,9 +555,14 @@ class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
                     );
                     Navigator.pop(context);
                   } catch (e) {
+                    debugPrint('Save time slot failed: $e');
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Could not save slot: $e')),
+                      const SnackBar(
+                        content: Text(
+                          'Could not save slot. Please try again.',
+                        ),
+                      ),
                     );
                   } finally {
                     if (mounted) setState(() => _saving = false);
