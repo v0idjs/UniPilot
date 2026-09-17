@@ -1,13 +1,14 @@
 # Icon source is the exact brand vector at assets/logo.svg.
 # assets/icon/app_icon.png is a raster derived from that exact file
-# (do not hand-edit the PNG); Android adaptive foreground uses the SVG directly.
+# (do not hand-edit the PNG). The launcher tool decodes raster images
+# only, so every entry below must point at the PNG master, never the SVG.
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
   adaptive_icon_background: "#1E1B4B"
-  adaptive_icon_foreground: "assets/logo.svg"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
   web:
     generate: true
     image_path: "assets/icon/app_icon.png"

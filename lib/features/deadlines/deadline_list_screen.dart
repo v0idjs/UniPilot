@@ -11,6 +11,7 @@ class DeadlineListScreen extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
+        icon: const BrandLogo(size: 36),
         title: const Text('Add Deadline'),
         content: const _AddDeadlineForm(),
         actions: [
@@ -53,6 +54,7 @@ class DeadlineListScreen extends ConsumerWidget {
               final a = list[i];
               return Card(
                 child: ListTile(
+                  trailing: const Icon(Icons.chevron_right),
                   leading: IconButton(
                     icon: Icon(
                       a.completed
@@ -105,6 +107,7 @@ class _DeadlineDetailDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
+      icon: const BrandLogo(size: 36),
       title: Text(item.title),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         Text('Due ${item.dueAt.toLocal().toString().split(' ')[0]}'),

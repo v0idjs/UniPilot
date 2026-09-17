@@ -38,6 +38,7 @@ class _CampusScreenState extends State<CampusScreen> {
                 leading: const Icon(Icons.room),
                 title: Text('${r.building} — ${r.room}'),
                 subtitle: Text([r.floor, r.notes].whereType<String>().join(' • ')),
+                trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   showModalBottomSheet<void>(
                     context: context,

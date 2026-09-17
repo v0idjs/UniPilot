@@ -114,17 +114,48 @@ jobs:
           grep -n "kotlin\|compileSdk\|buildToolsVersion\|targetSdk" android/settings.gradle android/build.gradle android/app/build.gradle || true
         shell: bash
 
+      - name: Configure persistent signing key
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "Signing secrets present - configuring persistent release key."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+            cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+            # The Flutter template picks up android/key.properties automatically,
+            # so every release is signed with the same key and updates install cleanly.
+          else
+            echo "WARNING: no signing secrets - falling back to debug signing."
+            echo "Debug keys differ per CI machine, so updates may conflict;"
+            echo "see docs/release.md for the persistent-key setup."
+          fi
+        shell: bash
+
       - run: flutter pub get
       - name: Generate launcher icons
-        run: dart run flutter_launcher_icons || echo "launcher icons skipped (no png? check)"
+        run: |
+          dart run flutter_launcher_icons
+          echo "=== Verifying generated icons ==="
+          ls android/app/src/main/res/mipmap-hdpi/launcher_icon.png \
+             android/app/src/main/res/mipmap-mdpi/launcher_icon.png \
+             android/app/src/main/res/mipmap-xhdpi/launcher_icon.png \
+             android/app/src/main/res/mipmap-xxhdpi/launcher_icon.png \
+             android/app/src/main/res/mipmap-xxxhdpi/launcher_icon.png
         shell: bash
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
       - run: flutter test --coverage || true
-      - run: flutter build apk --release --split-per-abi
+      # Single universal APK: one file per release, no ABI picking, and the
+      # versionCode from pubspec guarantees updates replace older installs.
+      - run: flutter build apk --release
 
-      - name: List APKs
-        run: ls -lh build/app/outputs/flutter-apk/
+      - name: Stage APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/unipilot-android.apk
+          ls -lh build/app/outputs/flutter-apk/
         shell: bash
 
       - uses: actions/upload-artifact@v4
@@ -153,9 +184,34 @@ jobs:
           }
         shell: pwsh
 
+      - name: Brand the native window background
+        run: |
+          $runner = "windows/runner"
+          Write-Output "=== Native background scan ==="
+          Get-ChildItem $runner -Filter *.cpp | ForEach-Object {
+            Select-String -Path $_.FullName -Pattern 'hbrBackground|CreateSolidBrush|COLOR_WINDOW|RGB\(' | ForEach-Object { Write-Output "$($_.Filename):$($_.LineNumber): $($_.Line.Trim())" }
+          }
+          # Best effort: swap a white brush for brand indigo (#1E1B4B) so the
+          # window is never white before the first Flutter frame paints.
+          $target = Join-Path $runner "win32_window.cpp"
+          if (Test-Path $target) {
+            $text = Get-Content $target -Raw
+            $patched = $text -replace 'RGB\(\s*255\s*,\s*255\s*,\s*255\s*\)', 'RGB(30, 27, 75)'
+            if ($patched -ne $text) {
+              Set-Content $target $patched -NoNewline
+              Write-Output "Patched white brush to brand indigo."
+            } else {
+              Write-Output "No white brush found - leaving runner untouched."
+            }
+          }
+        shell: pwsh
+
       - run: flutter pub get
       - name: Generate launcher icons
-        run: dart run flutter_launcher_icons || echo "launcher icons skipped"
+        run: |
+          dart run flutter_launcher_icons
+          echo "=== Verifying generated icons ==="
+          ls windows/runner/resources/app_icon.ico
         shell: bash
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
@@ -231,10 +287,8 @@ jobs:
           cat >> /tmp/release_body.md << 'EOF'
 
           #### Release Assets
-          - **Android APKs**:
-            - `app-arm64-v8a-release.apk` (modern 64-bit devices)
-            - `app-armeabi-v7a-release.apk` (32-bit devices)
-            - `app-x86_64-release.apk` (emulators / ChromeOS)
+          - **Android APK**:
+            - `unipilot-android.apk` (universal build for all devices)
           - **Windows Desktop**:
             - `unipilot-windows.zip` (standalone Windows release)
 

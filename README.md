@@ -40,7 +40,7 @@ test/            # unit + widget tests
 ```
 
 ## CI/CD
-Tag `v*` triggers `Release UniPilot` workflow (APK splits + Windows zip + auto release notes). See `docs/release.md`.
+Tag `v*` triggers `Release UniPilot` workflow (universal APK + Windows zip + auto release notes). See `docs/release.md`.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). PRs welcome — please add tests.

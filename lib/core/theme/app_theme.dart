@@ -63,7 +63,7 @@ ThemeData buildLightTheme() {
       backgroundColor: AppColors.surfaceLight,
       indicatorColor: AppColors.amberAccent.withOpacity(0.25),
       labelTextStyle: WidgetStateProperty.all(
-        const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+        const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     navigationRailTheme: const NavigationRailThemeData(
@@ -78,6 +78,48 @@ ThemeData buildLightTheme() {
     ),
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: AppColors.surfaceLight,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: AppColors.indigoPrimary,
+      ),
+      contentTextStyle: TextStyle(
+        fontSize: 14,
+        color: AppColors.indigoPrimary.withOpacity(0.8),
+      ),
+    ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppColors.surfaceLight,
+      surfaceTintColor: Colors.transparent,
+      headerBackgroundColor: AppColors.indigoPrimary,
+      headerForegroundColor: Colors.white,
+      dayForegroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? Colors.white
+            : AppColors.indigoPrimary,
+      ),
+      dayBackgroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? AppColors.amberAccent
+            : Colors.transparent,
+      ),
+      todayForegroundColor:
+          WidgetStateProperty.all(AppColors.indigoPrimary),
+      todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+    ),
+    timePickerTheme: const TimePickerThemeData(
+      backgroundColor: AppColors.surfaceLight,
+      dialBackgroundColor: AppColors.indigoPrimary,
+      dialHandColor: AppColors.amberAccent,
+      dialTextColor: Colors.white,
+      hourMinuteTextColor: AppColors.indigoPrimary,
+      dayPeriodTextColor: AppColors.indigoPrimary,
+      entryModeIconColor: AppColors.indigoPrimary,
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: AppColors.indigoPrimary),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       shape: RoundedRectangleBorder(
@@ -141,7 +183,7 @@ ThemeData buildDarkTheme() {
       backgroundColor: AppColors.surfaceDark,
       indicatorColor: AppColors.amberAccent.withOpacity(0.3),
       labelTextStyle: WidgetStateProperty.all(
-        const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+        const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     navigationRailTheme: const NavigationRailThemeData(
@@ -154,8 +196,49 @@ ThemeData buildDarkTheme() {
       ),
       indicatorColor: AppColors.indigoLight,
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: const DialogTheme(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: AppColors.surfaceDark,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+      contentTextStyle: TextStyle(
+        fontSize: 14,
+        color: Colors.white70,
+      ),
+    ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppColors.surfaceDark,
+      surfaceTintColor: Colors.transparent,
+      headerBackgroundColor: AppColors.indigoDark,
+      headerForegroundColor: Colors.white,
+      dayForegroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? AppColors.indigoPrimary
+            : Colors.white,
+      ),
+      dayBackgroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? AppColors.amberAccent
+            : Colors.transparent,
+      ),
+      todayForegroundColor: WidgetStateProperty.all(AppColors.amberAccent),
+      todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+    ),
+    timePickerTheme: const TimePickerThemeData(
+      backgroundColor: AppColors.surfaceDark,
+      dialBackgroundColor: AppColors.indigoDark,
+      dialHandColor: AppColors.amberAccent,
+      dialTextColor: Colors.white,
+      hourMinuteTextColor: Colors.white,
+      dayPeriodTextColor: AppColors.amberAccent,
+      entryModeIconColor: AppColors.amberAccent,
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: AppColors.amberAccent),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       shape: RoundedRectangleBorder(
@@ -172,11 +255,11 @@ ThemeData buildDarkTheme() {
 
 TextTheme _buildTextTheme(TextTheme base) {
   return base.copyWith(
-    displayLarge: base.displayLarge?.copyWith(fontFamily: 'Sora', fontWeight: FontWeight.w700),
-    headlineSmall: base.headlineSmall?.copyWith(fontFamily: 'Sora', fontWeight: FontWeight.w700),
-    titleLarge: base.titleLarge?.copyWith(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+    displayLarge: base.displayLarge?.copyWith(fontWeight: FontWeight.w700),
+    headlineSmall: base.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+    titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w600),
     bodyLarge: base.bodyLarge?.copyWith(fontFamily: 'Inter'),
     bodyMedium: base.bodyMedium?.copyWith(fontFamily: 'Inter'),
-    labelLarge: base.labelLarge?.copyWith(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+    labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w600),
   );
 }

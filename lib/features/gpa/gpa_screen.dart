@@ -60,6 +60,7 @@ class GpaScreen extends ConsumerWidget {
                   leading: const Icon(Icons.school),
                   title: Text(s.name),
                   subtitle: const Text('Add courses to calculate GPA'),
+                  trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showSemesterDetail(context, s),
                 ),
               );

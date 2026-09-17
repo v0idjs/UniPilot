@@ -92,6 +92,8 @@ class ScheduleScreen extends ConsumerWidget {
                         title: Text('${c.code} — ${c.name}'),
                         subtitle:
                             c.room == null ? null : Text(c.room!),
+                        trailing:
+                            const Icon(Icons.chevron_right),
                         onTap: () => _showCourseDetail(context, c),
                       ),
                     ),
