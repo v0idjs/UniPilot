@@ -32,7 +32,14 @@ void main() {
     await tester.tap(find.textContaining('Essay'));
     await _pump(tester);
 
-    expect(find.byType(BrandLogo), findsOneWidget);
+    // The app bar carries its own mark; assert the one inside the dialog.
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(BrandLogo),
+      ),
+      findsOneWidget,
+    );
 
     await tester.pump(const Duration(seconds: 5));
   });

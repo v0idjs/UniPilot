@@ -196,16 +196,16 @@ ThemeData buildDarkTheme() {
       ),
       indicatorColor: AppColors.indigoLight,
     ),
-    dialogTheme: const DialogTheme(
+    dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: AppColors.surfaceDark,
       surfaceTintColor: Colors.transparent,
-      titleTextStyle: TextStyle(
+      titleTextStyle: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
         color: Colors.white,
       ),
-      contentTextStyle: TextStyle(
+      contentTextStyle: const TextStyle(
         fontSize: 14,
         color: Colors.white70,
       ),
