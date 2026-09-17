@@ -52,3 +52,5 @@ secrets/
 # OS temp
 *.tmp
 /docs/adr
+/.agents/
+/skills-lock.json
