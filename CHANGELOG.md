@@ -2,6 +2,23 @@
 
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
+## v0.4.0 — 2026-09-17
+### Added
+- Persistent release signing so Android updates install cleanly over previous releases
+- Fully themed dialogs, date pickers, and time pickers with readable brand colors in light and dark modes
+- Brand mark on dialogs plus chevron affordances on every tappable row
+- Branded native window background and a Windows troubleshooting runbook
+
+### Changed
+- Single universal install file per release instead of per-architecture variants
+- Release pipeline now fails loudly if generated icons are missing
+
+### Fixed
+- Newer installs conflicting with the existing package on update
+- Launcher generation silently skipping output due to a vector foreground
+- Dialogs and pickers inheriting washed-out default surfaces
+- Tappable rows giving no visual hint that they respond
+
 ## v0.3.0 — 2026-09-16
 ### Added
 - Brand mark surfaced inside the app bar on every section, matching the launcher icon
