@@ -80,3 +80,27 @@ Checkpoint commits on `main` for this task, in order:
 
 Each message describes its stage and evidence; all are reachable from
 `HEAD` on `main`.
+
+## Release saga (post-GREEN)
+
+- First `v0.4.0` release run failed fast in both icon steps: the
+  config still asked for iOS output while no `ios/` runner exists
+  (`PathNotFoundException` on the iOS icon set). Previously swallowed
+  by `|| echo`, now loud by design. Fixed by disabling iOS/Web
+  outputs.
+- Second run failed asymmetrically: each job scaffolds only its own
+  runner, but the icon tool touches all configured platforms
+  (missing `AndroidManifest.xml` on Windows and vice versa). Fixed by
+  scaffolding both runners in each job.
+- Third run succeeded: `v0.4.0` ships `unipilot-android.apk`
+  (universal) + `unipilot-windows.zip`.
+- The Windows background scan proved the native template uses a null
+  brush (`hbrBackground = 0`), so no white is painted natively —
+  remaining white-screen suspicion stays on first-frame/engine
+  behavior, mitigated by paint-first startup plus the opaque theme.
+- One manual step remains outside code: repository secrets
+  (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`,
+  `KEY_PASSWORD`) must be added once per `docs/release.md`; until
+  then releases stay debug-signed and cross-release updates still
+  conflict. Installs already broken by mixed-signature history need
+  one `adb uninstall com.unipilot.unipilot` first.
