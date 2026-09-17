@@ -25,8 +25,10 @@ jobs:
 
       - name: Ensure platforms exist
         run: |
-          if [ ! -f android/settings.gradle ]; then
-            flutter create --platforms android --project-name unipilot --org com.unipilot . || true
+          # Scaffold both runners: the icon step generates android and
+          # windows outputs and fails when either tree is missing.
+          if [ ! -f android/settings.gradle ] || [ ! -f windows/CMakeLists.txt ]; then
+            flutter create --platforms android,windows --project-name unipilot --org com.unipilot . || true
           fi
         shell: bash
 
@@ -179,8 +181,10 @@ jobs:
 
       - name: Ensure platforms exist
         run: |
-          if (!(Test-Path windows/CMakeLists.txt)) {
-            flutter create --platforms windows --project-name unipilot --org com.unipilot .
+          # Scaffold both runners: the icon step generates android and
+          # windows outputs and fails when either tree is missing.
+          if (!(Test-Path android/settings.gradle) -or !(Test-Path windows/CMakeLists.txt)) {
+            flutter create --platforms android,windows --project-name unipilot --org com.unipilot .
           }
         shell: pwsh
 
