@@ -55,4 +55,21 @@ void main() {
     expect(r.rows.length, 2);
     expect(r.rows[1].room, 'B203');
   });
+
+  test('rejects oversize input', () {
+    final big = 'A' * (512 * 1024 + 1);
+    final r = parser.parse(big);
+    expect(r.rows, isEmpty);
+    expect(r.errors.any((e) => e.contains('too large')), isTrue);
+  });
+
+  test('truncates excessive rows', () {
+    final buf = StringBuffer('code,name,day,start,end\n');
+    for (var i = 0; i < 2500; i++) {
+      buf.writeln('C$i,Course $i,Mon,09:00,10:00');
+    }
+    final r = parser.parse(buf.toString());
+    expect(r.rows.length, 2000);
+    expect(r.errors.any((e) => e.contains('Truncated')), isTrue);
+  });
 }

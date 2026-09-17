@@ -12,4 +12,18 @@ void main() {
   test('searchRooms no match', () {
     expect(searchRooms('xyz', campusRoomsSample), isEmpty);
   });
+  test('fromJson rejects malformed room', () {
+    expect(
+      () => CampusRoom.fromJson({'id': 1, 'building': 'B', 'room': 'R'}),
+      throwsA(isA<FormatException>()),
+    );
+  });
+  test('fromJson parses valid room', () {
+    final r = CampusRoom.fromJson(
+      {'id': '9', 'building': 'B', 'room': 'R101', 'floor': '1F'},
+    );
+    expect(r.id, '9');
+    expect(r.floor, '1F');
+    expect(r.notes, isNull);
+  });
 }

@@ -37,4 +37,28 @@ void main() {
     final r = parser.parse(ics);
     expect(r.events.length, 12);
   });
+
+  test('rejects oversize input', () {
+    final big = 'A' * (512 * 1024 + 1);
+    final r = parser.parse(big);
+    expect(r.events, isEmpty);
+    expect(r.errors.any((e) => e.contains('too large')), isTrue);
+  });
+
+  test('clamps huge COUNT instead of throwing', () {
+    const ics = 'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:X\nRRULE:FREQ=WEEKLY;COUNT=99999999999999999999999\nEND:VEVENT\nEND:VCALENDAR';
+    final r = parser.parse(ics);
+    expect(r.events.length, 52);
+  });
+
+  test('truncates runaway total events', () {
+    final buf = StringBuffer('BEGIN:VCALENDAR\n');
+    for (var i = 0; i < 30; i++) {
+      buf.writeln('BEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:C$i\nRRULE:FREQ=WEEKLY;COUNT=52\nEND:VEVENT');
+    }
+    buf.writeln('END:VCALENDAR');
+    final r = parser.parse(buf.toString());
+    expect(r.events.length, 1000);
+    expect(r.errors.any((e) => e.contains('Truncated')), isTrue);
+  });
 }
