@@ -4,7 +4,12 @@ import 'database_api.dart';
 
 final dbProvider = Provider<UniPilotDatabase>((ref) {
   final db = AppDatabase();
-  ref.onDispose(db.close);
+  ref.onDispose(() {
+    // close() is async; fire-and-forget is intentional here —
+    // Riverpod disposers are synchronous.
+    // ignore: discarded_futures
+    db.close();
+  });
   return db;
 });
 

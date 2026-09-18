@@ -26,4 +26,17 @@ void main() {
     expect(r.floor, '1F');
     expect(r.notes, isNull);
   });
+  test('searchRooms trims surrounding whitespace', () {
+    // searchRooms trims internally so direct callers pass raw input.
+    final res = searchRooms('  lib  ', campusRoomsSample);
+    expect(res.length, 2);
+    expect(res.map((r) => r.building), everyElement('Library'));
+  });
+  test('fromJson truncates oversized strings', () {
+    final long = 'B' * 300;
+    final r = CampusRoom.fromJson({'id': '9', 'building': long, 'room': 'R101'});
+    expect(r.building.length, lessThanOrEqualTo(201));
+    expect(r.building.length, 201);
+    expect(r.building.endsWith('…'), isTrue);
+  });
 }

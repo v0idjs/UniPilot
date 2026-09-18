@@ -11,8 +11,10 @@ String formatCountdown(DateTime dueAt, {DateTime? now}) {
   final diff = dueAt.difference(n);
   if (diff.isNegative) {
     final overdue = n.difference(dueAt);
+    if (overdue.inMinutes < 1) return 'Just overdue';
     return 'Overdue by ${_humanDuration(overdue)}';
   }
+  if (diff.inMinutes < 1) return '<1m left';
   if (diff.inMinutes < 60) return '${diff.inMinutes}m left';
   if (diff.inHours < 24) {
     final h = diff.inHours;

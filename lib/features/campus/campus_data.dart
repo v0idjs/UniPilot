@@ -21,12 +21,16 @@ class CampusRoom {
     if (notes != null && notes is! String) {
       throw FormatException('Invalid campus room notes');
     }
+    // Truncate hostile/oversized JSON strings so one bad entry
+    // cannot bloat the room list UI.
+    String trunc(String s) =>
+        s.length > 200 ? '${s.substring(0, 200)}…' : s;
     return CampusRoom(
-      id: id,
-      building: building,
-      room: room,
-      floor: floor as String?,
-      notes: notes as String?,
+      id: trunc(id),
+      building: trunc(building),
+      room: trunc(room),
+      floor: floor == null ? null : trunc(floor as String),
+      notes: notes == null ? null : trunc(notes as String),
     );
   }
 }
@@ -42,6 +46,6 @@ const campusRoomsSample = [
 
 List<CampusRoom> searchRooms(String query, List<CampusRoom> rooms) {
   if (query.trim().isEmpty) return rooms;
-  final q = query.toLowerCase();
+  final q = query.trim().toLowerCase();
   return rooms.where((r) => r.building.toLowerCase().contains(q) || r.room.toLowerCase().contains(q) || (r.notes?.toLowerCase().contains(q) ?? false)).toList();
 }

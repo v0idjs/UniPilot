@@ -111,21 +111,30 @@ class _SemesterDetailSheet extends ConsumerWidget {
         const SizedBox(height: 4),
         gradesAsync.when(
           data: (grades) {
-            final gpa = calculateGpa(
-              [
-                for (final g in grades)
+            final valid = [
+              for (final g in grades)
+                if (scale.isValidGrade(g.grade))
                   CourseInput(
                     grade: g.grade,
                     credits: g.credits,
                     isPassFail: g.isPassFail,
                     isHonors: g.isHonors,
                   ),
+            ];
+            final skipped = grades.length - valid.length;
+            final gpa = calculateGpa(valid, scale);
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  grades.isEmpty || valid.isEmpty
+                      ? 'No valid grades yet'
+                      : skipped > 0
+                          ? 'GPA $gpa ($skipped invalid grade${skipped == 1 ? '' : 's'} skipped)'
+                          : 'GPA $gpa',
+                  style: const TextStyle(fontSize: 16),
+                ),
               ],
-              scale,
-            );
-            return Text(
-              grades.isEmpty ? 'No grades yet' : 'GPA $gpa',
-              style: const TextStyle(fontSize: 16),
             );
           },
           loading: () => const Text('Loading grades'),
@@ -145,8 +154,20 @@ class _SemesterDetailSheet extends ConsumerWidget {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
                     tooltip: 'Delete grade',
-                    onPressed: () {
-                      ref.read(dbProvider).deleteGrade(g.id);
+                    onPressed: () async {
+                      try {
+                        await ref.read(dbProvider).deleteGrade(g.id);
+                      } catch (e) {
+                        debugPrint('Delete grade failed: $e');
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Could not delete grade. Please try again.',
+                            ),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ),

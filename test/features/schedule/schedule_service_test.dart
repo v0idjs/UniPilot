@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:unipilot/core/db/app_database.dart';
 import 'package:unipilot/features/schedule/schedule_service.dart';
 
 void main() {
@@ -51,5 +52,47 @@ void main() {
     final now = DateTime(2025, 9, 15, 10, 0); // Mon
     final next = nextClass(slots, now);
     expect(next?.id, '2'); // Tue is sooner than Wed
+  });
+
+  group('toSlots (regression)', () {
+    Course course(String id) => Course(
+          id: id,
+          code: 'CS101',
+          name: 'Intro',
+          color: '232946',
+          createdAt: DateTime(2025, 9, 15),
+          updatedAt: DateTime(2025, 9, 15),
+        );
+
+    ScheduleEntry entry(String id, String courseId) => ScheduleEntry(
+          id: id,
+          courseId: courseId,
+          dayOfWeek: 1,
+          startMinutes: 540,
+          endMinutes: 600,
+          createdAt: DateTime(2025, 9, 15),
+        );
+
+    test('skips orphan courseId', () {
+      final slots = toSlots([course('c-1')], [
+        entry('e-1', 'c-1'),
+        entry('e-orphan', 'c-deleted'),
+      ]);
+      expect(slots.map((s) => s.id), ['e-1']);
+    });
+  });
+
+  group('nextOccurrence (regression)', () {
+    test('same-day future slot stays today', () {
+      final s = slot('1', 1, 660, 720); // Mon 11:00
+      final now = DateTime(2025, 9, 15, 10, 0); // Mon 10:00
+      expect(nextOccurrence(s, now), DateTime(2025, 9, 15, 11, 0));
+    });
+
+    test('already-started slot rolls +7d', () {
+      final s = slot('1', 1, 540, 600); // Mon 09:00
+      final now = DateTime(2025, 9, 15, 10, 0); // Mon 10:00
+      expect(nextOccurrence(s, now), DateTime(2025, 9, 22, 9, 0));
+    });
   });
 }

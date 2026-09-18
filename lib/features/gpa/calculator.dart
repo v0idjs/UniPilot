@@ -17,7 +17,7 @@ double calculateGpa(List<CourseInput> courses, GradingScale scale) {
     if (c.credits <= 0) continue;
     // honors bump +0.5 capped at scale max
     double points = scale.gradeToPoints(c.grade);
-    if (c.isHonors) points = (points + 0.5).clamp(0, 5.0);
+    if (c.isHonors) points = (points + 0.5).clamp(0, scale.maxPoints);
     totalPoints += points * c.credits;
     totalCredits += c.credits;
   }
@@ -37,7 +37,7 @@ double calculateCumulative(List<List<CourseInput>> semesters, List<GradingScale>
     for (final c in semesters[i]) {
       if (c.isPassFail || c.credits <= 0) continue;
       double points = scale.gradeToPoints(c.grade);
-      if (c.isHonors) points = (points + 0.5).clamp(0, 5.0);
+      if (c.isHonors) points = (points + 0.5).clamp(0, scale.maxPoints);
       totalPoints += points * c.credits;
       totalCredits += c.credits;
     }

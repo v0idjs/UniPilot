@@ -93,6 +93,68 @@ void main() {
     expect(await db.watchAssignments().first, isEmpty);
   });
 
+  test('createEntry rejects dayOfWeek 0', () async {
+    final db = _memoryDb();
+    addTearDown(db.close);
+
+    await db.createCourse(code: 'CS101', name: 'Intro');
+    final course = (await db.watchCourses().first).single;
+
+    expect(
+      () => db.createEntry(
+        courseId: course.id,
+        dayOfWeek: 0,
+        startMinutes: 540,
+        endMinutes: 600,
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
+  test('createEntry rejects end before start', () async {
+    final db = _memoryDb();
+    addTearDown(db.close);
+
+    await db.createCourse(code: 'CS101', name: 'Intro');
+    final course = (await db.watchCourses().first).single;
+
+    expect(
+      () => db.createEntry(
+        courseId: course.id,
+        dayOfWeek: 1,
+        startMinutes: 600,
+        endMinutes: 540,
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
+  test('createCourse rejects empty code', () async {
+    final db = _memoryDb();
+    addTearDown(db.close);
+
+    expect(() => db.createCourse(code: '', name: 'Intro'), throwsA(isA<ArgumentError>()));
+    expect(() => db.createCourse(code: 'CS101', name: ''), throwsA(isA<ArgumentError>()));
+  });
+
+  test('createGrade rejects zero credits', () async {
+    final db = _memoryDb();
+    addTearDown(db.close);
+
+    await db.createSemester(name: 'Fall 2026');
+    final semester = (await db.watchSemesters().first).single;
+
+    expect(
+      () => db.createGrade(
+        semesterId: semester.id,
+        courseName: 'Math',
+        grade: 'A',
+        credits: 0,
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
   test('grades are stored per semester and semester deletes cascade', () async {
     final db = _memoryDb();
     addTearDown(db.close);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../core/theme/colors.dart';
 import '../core/utils/time.dart';
@@ -5,28 +7,52 @@ import '../features/schedule/schedule_service.dart';
 
 /// Branded hero card for the next class: indigo gradient, countdown,
 /// course identity, and room chip. Falls back to a calm empty state.
-class NextClassCard extends StatelessWidget {
+///
+/// Refreshes every 60s so the countdown never goes stale between
+/// stream events.
+class NextClassCard extends StatefulWidget {
   final ScheduleSlot? slot;
   const NextClassCard({super.key, this.slot});
 
-  DateTime _nextDateTime(ScheduleSlot s, DateTime now) {
-    var dayDiff = s.dayOfWeek - now.weekday;
-    if (dayDiff < 0) dayDiff += 7;
-    final startToday = s.startMinutes > now.hour * 60 + now.minute;
-    if (dayDiff == 0 && !startToday) dayDiff = 7;
-    final base = DateTime(now.year, now.month, now.day)
-        .add(Duration(days: dayDiff));
-    return DateTime(
-      base.year,
-      base.month,
-      base.day,
-      s.startMinutes ~/ 60,
-      s.startMinutes % 60,
-    );
+  @override
+  State<NextClassCard> createState() => _NextClassCardState();
+}
+
+class _NextClassCardState extends State<NextClassCard> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.slot != null) {
+      _timer = Timer.periodic(const Duration(seconds: 60), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(NextClassCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.slot == null && widget.slot != null) {
+      _timer ??= Timer.periodic(const Duration(seconds: 60), (_) {
+        if (mounted) setState(() {});
+      });
+    } else if (oldWidget.slot != null && widget.slot == null) {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final slot = widget.slot;
     if (slot == null) {
       return Card(
         child: Padding(
@@ -44,8 +70,7 @@ class NextClassCard extends StatelessWidget {
         ),
       );
     }
-    final s = slot!;
-    final countdown = formatCountdown(_nextDateTime(s, DateTime.now()));
+    final countdown = formatCountdown(nextOccurrence(slot, DateTime.now()));
     final onIndigo = Colors.white;
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -88,7 +113,7 @@ class NextClassCard extends StatelessWidget {
           ]),
           const SizedBox(height: 8),
           Text(
-            '${s.courseCode} — ${s.courseName}',
+            '${slot.courseCode} — ${slot.courseName}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -105,7 +130,7 @@ class NextClassCard extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              '${formatMinutes(s.startMinutes)} – ${formatMinutes(s.endMinutes)}',
+              '${formatMinutes(slot.startMinutes)} – ${formatMinutes(slot.endMinutes)}',
               style: TextStyle(color: onIndigo.withOpacity(0.9)),
             ),
             const SizedBox(width: 12),
@@ -117,7 +142,7 @@ class NextClassCard extends StatelessWidget {
             const SizedBox(width: 4),
             Expanded(
               child: Text(
-                s.room ?? 'TBA',
+                slot.room ?? 'TBA',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: onIndigo.withOpacity(0.9)),

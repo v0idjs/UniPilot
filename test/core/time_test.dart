@@ -22,6 +22,19 @@ void main() {
     expect(formatCountdown(due, now: now), contains('Overdue'));
   });
 
+  test('formatCountdown due now is <1m left', () {
+    final now = DateTime(2025, 9, 15, 10, 0);
+    expect(formatCountdown(now, now: now), '<1m left');
+  });
+
+  test('formatCountdown just overdue', () {
+    final now = DateTime(2025, 9, 15, 10, 0);
+    expect(
+      formatCountdown(now.subtract(const Duration(seconds: 10)), now: now),
+      'Just overdue',
+    );
+  });
+
   test('isOverlapping', () {
     expect(isOverlapping(540, 630, 600, 660), true);
     expect(isOverlapping(540, 600, 600, 660), false);

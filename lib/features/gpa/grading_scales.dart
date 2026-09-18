@@ -2,6 +2,7 @@
 abstract class GradingScale {
   String get id;
   String get displayName;
+  double get maxPoints;
   double gradeToPoints(String grade);
   bool isValidGrade(String grade);
 }
@@ -11,6 +12,8 @@ class Gpa40Scale implements GradingScale {
   String get id => 'gpa_4_0';
   @override
   String get displayName => '4.0 Scale';
+  @override
+  double get maxPoints => 4.0;
   static const _map = {
     'A+': 4.0, 'A': 4.0, 'A-': 3.7,
     'B+': 3.3, 'B': 3.0, 'B-': 2.7,
@@ -34,6 +37,8 @@ class Gpa43Scale implements GradingScale {
   String get id => 'gpa_4_3';
   @override
   String get displayName => '4.3 Scale (A+ = 4.3)';
+  @override
+  double get maxPoints => 4.3;
   static const _map = {
     'A+': 4.3, 'A': 4.0, 'A-': 3.7,
     'B+': 3.3, 'B': 3.0, 'B-': 2.7,
@@ -57,6 +62,8 @@ class Gpa50Scale implements GradingScale {
   String get id => 'gpa_5_0';
   @override
   String get displayName => '5.0 Scale';
+  @override
+  double get maxPoints => 5.0;
   static const _map = {
     'A+': 5.0, 'A': 5.0, 'A-': 4.5,
     'B+': 4.0, 'B': 3.5, 'B-': 3.0,
@@ -79,6 +86,8 @@ class PercentageScale implements GradingScale {
   String get id => 'percentage';
   @override
   String get displayName => 'Percentage (0-100 → 4.0)';
+  @override
+  double get maxPoints => 4.0;
   @override
   double gradeToPoints(String grade) {
     final v = double.tryParse(grade.trim().replaceAll('%', ''));
@@ -110,6 +119,11 @@ class CustomScale implements GradingScale {
   final Map<String, double> mapping; // uppercase grade -> points
   CustomScale({required this.id, required this.displayName, required Map<String, double> mapping})
       : mapping = {for (final e in mapping.entries) e.key.toUpperCase(): e.value};
+
+  @override
+  double get maxPoints => mapping.isEmpty
+      ? 4.0
+      : mapping.values.reduce((a, b) => a > b ? a : b);
 
   @override
   double gradeToPoints(String grade) {

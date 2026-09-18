@@ -56,6 +56,25 @@ void main() {
     expect(r.rows[1].room, 'B203');
   });
 
+  test('rejects out-of-range dot times', () {
+    const badHour = 'code,day,start,end\nCS101,Mon,25.00,26.00';
+    final r1 = parser.parse(badHour);
+    expect(r1.rows, isEmpty);
+    expect(r1.errors, isNotEmpty);
+
+    const badMin = 'code,day,start,end\nCS101,Mon,10.99,11.30';
+    final r2 = parser.parse(badMin);
+    expect(r2.rows, isEmpty);
+    expect(r2.errors, isNotEmpty);
+  });
+
+  test('parses dot time format', () {
+    const csv = 'code,day,start,end\nCS101,Mon,09.30,10.30';
+    final r = parser.parse(csv);
+    expect(r.errors, isEmpty);
+    expect(r.rows[0].startMinutes, 570);
+  });
+
   test('rejects oversize input', () {
     final big = 'A' * (512 * 1024 + 1);
     final r = parser.parse(big);

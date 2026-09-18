@@ -47,6 +47,14 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
 
   @override
   Future<int> createCourse({required String code, required String name}) {
+    if (code.trim().isEmpty) throw ArgumentError('Course code is required');
+    if (name.trim().isEmpty) throw ArgumentError('Course name is required');
+    if (code.trim().length > 60) {
+      throw ArgumentError('Course code too long (max 60)');
+    }
+    if (name.trim().length > 120) {
+      throw ArgumentError('Course name too long (max 120)');
+    }
     return into(courses).insert(
       CoursesCompanion.insert(id: _uuid.v4(), code: code, name: name),
     );
@@ -88,6 +96,18 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
     required int startMinutes,
     required int endMinutes,
   }) {
+    if (dayOfWeek < 1 || dayOfWeek > 7) {
+      throw ArgumentError('dayOfWeek must be 1..7 (got $dayOfWeek)');
+    }
+    if (startMinutes < 0 ||
+        startMinutes >= 1440 ||
+        endMinutes <= 0 ||
+        endMinutes > 1440) {
+      throw ArgumentError('Slot minutes must be within 0..1440');
+    }
+    if (endMinutes <= startMinutes) {
+      throw ArgumentError('endMinutes must be after startMinutes');
+    }
     return into(scheduleEntries).insert(
       ScheduleEntriesCompanion.insert(
         id: _uuid.v4(),
@@ -110,6 +130,10 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
 
   @override
   Future<int> createAssignment({required String title, required DateTime dueAt}) {
+    if (title.trim().isEmpty) throw ArgumentError('Title is required');
+    if (title.trim().length > 200) {
+      throw ArgumentError('Title too long (max 200)');
+    }
     return into(assignments).insert(
       AssignmentsCompanion.insert(id: _uuid.v4(), title: title, dueAt: dueAt),
     );
@@ -139,6 +163,10 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
 
   @override
   Future<int> createSemester({required String name}) {
+    if (name.trim().isEmpty) throw ArgumentError('Semester name is required');
+    if (name.trim().length > 120) {
+      throw ArgumentError('Semester name too long (max 120)');
+    }
     return into(semesters).insert(
       SemestersCompanion.insert(id: _uuid.v4(), name: name),
     );
@@ -163,6 +191,13 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
     required String grade,
     required double credits,
   }) {
+    if (courseName.trim().isEmpty) {
+      throw ArgumentError('Course name is required');
+    }
+    if (grade.trim().isEmpty) throw ArgumentError('Grade is required');
+    if (credits <= 0 || credits > 100) {
+      throw ArgumentError('Credits must be > 0 and ≤ 100 (got $credits)');
+    }
     return into(courseGrades).insert(
       CourseGradesCompanion.insert(
         id: _uuid.v4(),

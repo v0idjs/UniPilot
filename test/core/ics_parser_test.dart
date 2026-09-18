@@ -51,6 +51,14 @@ void main() {
     expect(r.events.length, 52);
   });
 
+  test('UNTIL before DTSTART returns empty events plus error', () {
+    const ics =
+        'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:CS101\nRRULE:FREQ=WEEKLY;UNTIL=20250901T090000\nEND:VEVENT\nEND:VCALENDAR';
+    final r = parser.parse(ics);
+    expect(r.events, isEmpty);
+    expect(r.errors, isNotEmpty);
+  });
+
   test('truncates runaway total events', () {
     final buf = StringBuffer('BEGIN:VCALENDAR\n');
     for (var i = 0; i < 30; i++) {

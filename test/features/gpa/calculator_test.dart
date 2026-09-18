@@ -80,4 +80,33 @@ void main() {
     final hypo = [CourseInput(grade: 'A', credits: 3)];
     expect(whatIfGpa(existing, hypo, Gpa40Scale()), 3.5);
   });
+
+  group('honors clamp to scale.maxPoints (regression)', () {
+    test('honors A on 4.0 caps at 4.0 (not 4.5)', () {
+      final courses = [CourseInput(grade: 'A', credits: 3, isHonors: true)];
+      expect(calculateGpa(courses, Gpa40Scale()), 4.0);
+    });
+
+    test('honors B on 5.0 bumps without clamping', () {
+      // Gpa50Scale B = 3.5, +0.5 = 4.0
+      final courses = [CourseInput(grade: 'B', credits: 3, isHonors: true)];
+      expect(calculateGpa(courses, Gpa50Scale()), 4.0);
+    });
+
+    test('honors A on 5.0 caps at 5.0', () {
+      final courses = [CourseInput(grade: 'A', credits: 3, isHonors: true)];
+      expect(calculateGpa(courses, Gpa50Scale()), 5.0);
+    });
+
+    test('CustomScale maxPoints is max mapping value', () {
+      final s = CustomScale(
+        id: 'custom_test',
+        displayName: 'Test',
+        mapping: {'A': 4.0, 'B': 3.0},
+      );
+      expect(s.maxPoints, 4.0);
+      final courses = [CourseInput(grade: 'A', credits: 3, isHonors: true)];
+      expect(calculateGpa(courses, s), 4.0);
+    });
+  });
 }

@@ -1,3 +1,4 @@
+import 'package:unipilot/core/db/app_database.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/utils/time.dart';
 
@@ -44,33 +45,59 @@ List<Conflict> detectConflicts(List<ScheduleSlot> slots) {
 /// Find next class from now.
 ScheduleSlot? nextClass(List<ScheduleSlot> slots, DateTime now) {
   if (slots.isEmpty) return null;
-  final nowDay = now.weekday;
-  final nowMinutes = now.hour * 60 + now.minute;
-  // Build ordered list for next 7 days
   ScheduleSlot? best;
   int bestDistance = 1 << 30;
   for (final s in slots) {
-    int dayDiff = s.dayOfWeek - nowDay;
-    if (dayDiff < 0) dayDiff += 7;
-    if (dayDiff == 0 && s.startMinutes <= nowMinutes) {
-      // Today but already started/passed -> next week
-      dayDiff = 7;
-    }
-    // For tomorrow etc., distance = dayDiff*1440 + (start - nowMinutes if today else start)
-    int distance;
-    if (dayDiff == 0) {
-      distance = s.startMinutes - nowMinutes;
-    } else {
-      distance = dayDiff * 1440 + s.startMinutes;
-      // subtract nowMinutes to keep relative
-      distance -= nowMinutes;
-    }
+    final distance =
+        nextOccurrence(s, now).difference(now).inMinutes;
     if (distance < bestDistance) {
       bestDistance = distance;
       best = s;
     }
   }
   return best;
+}
+
+/// Next wall-clock occurrence of a weekly slot after [now].
+/// Slots already started today roll to the same weekday next week.
+DateTime nextOccurrence(ScheduleSlot slot, DateTime now) {
+  var dayDiff = slot.dayOfWeek - now.weekday;
+  if (dayDiff < 0) dayDiff += 7;
+  final nowMinutes = now.hour * 60 + now.minute;
+  if (dayDiff == 0 && slot.startMinutes <= nowMinutes) dayDiff = 7;
+  final base =
+      DateTime(now.year, now.month, now.day).add(Duration(days: dayDiff));
+  return DateTime(
+    base.year,
+    base.month,
+    base.day,
+    slot.startMinutes ~/ 60,
+    slot.startMinutes % 60,
+  );
+}
+
+/// Map drift rows to UI slots, skipping orphan entries whose course
+/// was deleted but whose FK row has not cascaded yet.
+List<ScheduleSlot> toSlots(List<Course> courses, List<ScheduleEntry> entries) {
+  final byId = {for (final c in courses) c.id: c};
+  final slots = <ScheduleSlot>[];
+  for (final e in entries) {
+    final c = byId[e.courseId];
+    if (c == null) continue;
+    slots.add(
+      ScheduleSlot(
+        id: e.id,
+        courseId: e.courseId,
+        courseCode: c.code,
+        courseName: c.name,
+        dayOfWeek: e.dayOfWeek,
+        startMinutes: e.startMinutes,
+        endMinutes: e.endMinutes,
+        room: e.room,
+      ),
+    );
+  }
+  return slots;
 }
 
 String generateId() => const Uuid().v4();

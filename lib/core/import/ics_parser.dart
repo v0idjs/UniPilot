@@ -38,7 +38,7 @@ class IcsParser {
       } else if (line == 'END:VEVENT') {
         if (current != null) {
           final parsed = _parseEvent(current, errors);
-          if (parsed != null) events.addAll(_expandRrule(parsed));
+          if (parsed != null) events.addAll(_expandRrule(parsed, errors));
           current = null;
         }
       } else if (current != null && line.contains(':')) {
@@ -139,7 +139,7 @@ class IcsParser {
     }
   }
 
-  List<IcsEvent> _expandRrule(IcsEvent e) {
+  List<IcsEvent> _expandRrule(IcsEvent e, List<String> errors) {
     if (e.rrule == null) return [e];
     // Only handle FREQ=WEEKLY;COUNT=n or UNTIL; BYDAY optional
     final rrule = e.rrule!.toUpperCase();
@@ -153,6 +153,10 @@ class IcsParser {
     if (count <= 1 && untilMatch != null) {
       final until = _parseDate(untilMatch.group(1)!.trim(), null);
       if (until != null) {
+        if (until.isBefore(e.start)) {
+          errors.add('RRULE UNTIL before DTSTART: ${e.summary}');
+          return [];
+        }
         final days = until.difference(e.start).inDays;
         count = (days ~/ 7) + 1;
         if (count > 52) count = 52;

@@ -139,7 +139,7 @@ class ScheduleScreen extends ConsumerWidget {
                             leading:
                                 const Icon(Icons.calendar_view_week),
                             title: Text(
-                              '${_dayNames[e.dayOfWeek - 1]} '
+                              '${e.dayOfWeek >= 1 && e.dayOfWeek <= 7 ? _dayNames[e.dayOfWeek - 1] : 'Day ${e.dayOfWeek}'} '
                               '${formatMinutes(e.startMinutes)}–'
                               '${formatMinutes(e.endMinutes)}',
                             ),
@@ -174,24 +174,7 @@ class ScheduleScreen extends ConsumerWidget {
 }
 
 ScheduleSlot? _nextSlot(List<Course> courses, List<ScheduleEntry> entries) {
-  final byId = {for (final c in courses) c.id: c};
-  final slots = <ScheduleSlot>[];
-  for (final e in entries) {
-    final c = byId[e.courseId];
-    if (c == null) continue;
-    slots.add(
-      ScheduleSlot(
-        id: e.id,
-        courseId: e.courseId,
-        courseCode: c.code,
-        courseName: c.name,
-        dayOfWeek: e.dayOfWeek,
-        startMinutes: e.startMinutes,
-        endMinutes: e.endMinutes,
-        room: e.room,
-      ),
-    );
-  }
+  final slots = toSlots(courses, entries);
   return nextClass(slots, DateTime.now());
 }
 
@@ -503,23 +486,7 @@ class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
                         ref.read(coursesProvider).valueOrNull ?? [];
                     final entries =
                         ref.read(entriesProvider).valueOrNull ?? [];
-                    final byId = {for (final c in courses) c.id: c};
-                    final slots = <ScheduleSlot>[];
-                    for (final e in entries) {
-                      final c = byId[e.courseId];
-                      if (c == null) continue;
-                      slots.add(
-                        ScheduleSlot(
-                          id: e.id,
-                          courseId: e.courseId,
-                          courseCode: c.code,
-                          courseName: c.name,
-                          dayOfWeek: e.dayOfWeek,
-                          startMinutes: e.startMinutes,
-                          endMinutes: e.endMinutes,
-                        ),
-                      );
-                    }
+                    final slots = toSlots(courses, entries);
                     final candidate = ScheduleSlot(
                       id: 'new',
                       courseId: widget.course.id,
@@ -530,7 +497,9 @@ class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
                       endMinutes: _end,
                     );
                     final clash = detectConflicts([...slots, candidate]).any(
-                      (c) => c.a.id == 'new' || c.b.id == 'new',
+                      (c) =>
+                          identical(c.a, candidate) ||
+                          identical(c.b, candidate),
                     );
                     if (clash) {
                       if (!context.mounted) return;

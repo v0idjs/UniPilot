@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/app_database.dart';
 import '../../core/db/providers.dart';
+import '../../core/utils/time.dart';
 import '../../widgets/brand_logo.dart';
 
 class DeadlineListScreen extends ConsumerWidget {
@@ -64,11 +65,23 @@ class DeadlineListScreen extends ConsumerWidget {
                     tooltip: a.completed
                         ? 'Mark incomplete'
                         : 'Mark complete',
-                    onPressed: () {
-                      ref.read(dbProvider).setAssignmentCompleted(
-                            id: a.id,
-                            completed: !a.completed,
-                          );
+                    onPressed: () async {
+                      try {
+                        await ref.read(dbProvider).setAssignmentCompleted(
+                              id: a.id,
+                              completed: !a.completed,
+                            );
+                      } catch (e) {
+                        debugPrint('Toggle deadline failed: $e');
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Could not update deadline. Please try again.',
+                            ),
+                          ),
+                        );
+                      }
                     },
                   ),
                   title: Text(
@@ -80,7 +93,7 @@ class DeadlineListScreen extends ConsumerWidget {
                         : null,
                   ),
                   subtitle: Text(
-                    'Due ${a.dueAt.toLocal().toString().split(' ')[0]}'
+                    'Due ${formatDueDate(a.dueAt.toLocal())}'
                     '${a.completed ? ' • Completed' : ''}',
                   ),
                   onTap: () => _showDeadlineDetail(context, a),
@@ -111,17 +124,28 @@ class _DeadlineDetailDialog extends ConsumerWidget {
       icon: const BrandLogo(size: 36),
       title: Text(item.title),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text('Due ${item.dueAt.toLocal().toString().split(' ')[0]}'),
+        Text('Due ${formatDueDate(item.dueAt.toLocal())}'),
         const SizedBox(height: 4),
         Text(item.completed ? 'Status: Completed' : 'Status: Open'),
       ]),
       actions: [
         TextButton(
           onPressed: () async {
-            await ref.read(dbProvider).setAssignmentCompleted(
-                  id: item.id,
-                  completed: !item.completed,
-                );
+            try {
+              await ref.read(dbProvider).setAssignmentCompleted(
+                    id: item.id,
+                    completed: !item.completed,
+                  );
+            } catch (e) {
+              debugPrint('Toggle deadline failed: $e');
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Could not update deadline. Please try again.'),
+                ),
+              );
+              return;
+            }
             if (!context.mounted) return;
             Navigator.pop(context);
           },
@@ -129,7 +153,18 @@ class _DeadlineDetailDialog extends ConsumerWidget {
         ),
         TextButton(
           onPressed: () async {
-            await ref.read(dbProvider).deleteAssignment(item.id);
+            try {
+              await ref.read(dbProvider).deleteAssignment(item.id);
+            } catch (e) {
+              debugPrint('Delete deadline failed: $e');
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Could not delete deadline. Please try again.'),
+                ),
+              );
+              return;
+            }
             if (!context.mounted) return;
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -157,6 +192,11 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
   final _title = TextEditingController();
   DateTime? _due;
   bool _saving = false;
+
+  /// Deadlines are date-only in the UI; pin them to end-of-day so a
+  /// deadline "today" does not read overdue by the afternoon.
+  static DateTime _endOfDay(DateTime d) =>
+      DateTime(d.year, d.month, d.day, 23, 59);
   @override
   void dispose() {
     _title.dispose();
@@ -177,16 +217,20 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
       const SizedBox(height: 12),
       FilledButton(
         onPressed: () async {
+          final now = DateTime.now();
           final picked = await showDatePicker(
             context: context,
-            initialDate: DateTime.now().add(const Duration(days: 1)),
-            firstDate: DateTime.now(),
-            lastDate: DateTime.now().add(const Duration(days: 365)),
+            initialDate: DateTime(now.year, now.month, now.day)
+                .add(const Duration(days: 1)),
+            firstDate: DateTime(now.year, now.month, now.day),
+            lastDate: now.add(const Duration(days: 365)),
           );
-          if (picked != null) setState(() => _due = picked);
+          if (picked != null) {
+            setState(() => _due = _endOfDay(picked));
+          }
         },
         child: Text(
-          _due == null ? 'Pick due date' : _due.toString().split(' ')[0],
+          _due == null ? 'Pick due date' : formatDueDate(_due!.toLocal()),
         ),
       ),
       const SizedBox(height: 12),
@@ -200,8 +244,15 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
                   );
                   return;
                 }
-                final due =
-                    _due ?? DateTime.now().add(const Duration(days: 1));
+                final pickedDue = _due;
+                final DateTime due;
+                if (pickedDue != null) {
+                  due = pickedDue;
+                } else {
+                  due = _endOfDay(
+                    DateTime.now().add(const Duration(days: 1)),
+                  );
+                }
                 setState(() => _saving = true);
                 try {
                   await ref.read(dbProvider).createAssignment(
