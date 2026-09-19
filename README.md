@@ -20,7 +20,7 @@ Offline-first Flutter app for students: class schedule, deadline tracking, GPA c
 
 ## Prerequisites
 
-- [Flutter 3.24.0](https://docs.flutter.dev/release/archive) (pinned in CI)
+- [Flutter 3.27.4](https://docs.flutter.dev/release/archive) (pinned in CI)
 - [Git](https://git-scm.com/)
 - Android Studio or Android SDK for Android builds; Visual Studio C++ toolchain for Windows builds
 

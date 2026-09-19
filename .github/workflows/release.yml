@@ -19,7 +19,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.4'
           channel: stable
           cache: true
 
@@ -173,7 +173,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.4'
           channel: stable
           cache: true
 
@@ -297,7 +297,7 @@ jobs:
             - `unipilot-windows.zip` (standalone Windows release)
 
           #### Tech Stack
-          - Flutter 3.24.0 · Drift · Riverpod · go_router · flutter_local_notifications
+          - Flutter 3.27.4 · Drift · Riverpod · go_router · flutter_local_notifications
           EOF
           cat /tmp/release_body.md
         shell: bash

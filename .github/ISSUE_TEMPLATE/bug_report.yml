@@ -52,8 +52,8 @@ body:
       placeholder: |
         - Device: Pixel 7 / Windows 11 laptop
         - OS: Android 14 / Windows 11 23H2
-        - App version: v0.4.0 (or commit hash)
-        - Flutter: 3.24.0
+        - App version: v0.5.2 (or commit hash)
+        - Flutter: 3.27.4
     validations:
       required: true
   - type: checkboxes

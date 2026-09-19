@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Flutter SDK 3.24.x on `PATH` (`flutter --version`)
+- Flutter SDK 3.27.x on `PATH` (`flutter --version`)
 - Visual Studio 2022 with the Desktop C++ workload
 - `flutter config --enable-windows-desktop`
 

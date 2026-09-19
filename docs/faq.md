@@ -49,4 +49,4 @@ Push a tag matching `v*` (e.g. `v0.5.0`) and the `Release UniPilot` workflow bui
 
 ## Which Flutter version should I use?
 
-Flutter **3.24.0** (Dart >= 3.5) — that's what CI pins. A different Flutter may work, but if you see odd build or analyzer behavior, downgrade/upgrade to 3.24.0 first.
+Flutter **3.27.4** — that's what CI pins (bumped from 3.24.0 because the Windows notification plugin's FFI bindings crash the 3.24 AOT compiler). A different Flutter may work, but if you see odd build or analyzer behavior, match 3.27.4 first.

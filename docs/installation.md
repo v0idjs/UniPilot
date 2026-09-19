@@ -4,9 +4,9 @@ How to get UniPilot running on your machine for development.
 
 ## Prerequisites
 
-- **Flutter 3.24.0** — pinned in CI (`.github/workflows/ci.yml`). Check yours with `flutter --version`. If it differs, install 3.24.0 from the [Flutter release archive](https://docs.flutter.dev/release/archive).
+- **Flutter 3.27.4** — pinned in CI (`.github/workflows/ci.yml`). Check yours with `flutter --version`. If it differs, install 3.27.4 from the [Flutter release archive](https://docs.flutter.dev/release/archive).
 - **Git** — for cloning.
-- **Dart >= 3.5** — comes bundled with Flutter 3.24.0.
+- **Dart >= 3.6** — comes bundled with Flutter 3.27.4.
 - For Android runs: Android Studio (or Android SDK + an emulator/device).
 - For Windows runs: a Windows machine with the Visual Studio C++ desktop toolchain.
 
