@@ -37,6 +37,18 @@ If the window opens but stays blank:
 4. Run `flutter clean` followed by `flutter pub get` when switching
    toolchains or after generated-code changes.
 
+## Notifications on Windows
+
+Deadline reminders use Windows toast notifications (plugin v19+). Two
+caveats:
+
+1. The `windows/runner` tree is scaffolded by `flutter create` in CI, so
+   no toast manifest work is needed in this repo.
+2. On unpackaged builds (plain `flutter run` / the release zip, not
+   MSIX), Windows shows toasts but `cancel` is a platform no-op — a
+   deleted deadline's already-fired toast cannot be retracted. This is a
+   plugin limitation, not an app bug.
+
 ## Icons
 
 The launcher icon derives from the exact brand vector at

@@ -129,14 +129,19 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
       (select(assignments)..orderBy([(a) => OrderingTerm.asc(a.dueAt)])).watch();
 
   @override
-  Future<int> createAssignment({required String title, required DateTime dueAt}) {
+  Future<String> createAssignment({
+    required String title,
+    required DateTime dueAt,
+  }) async {
     if (title.trim().isEmpty) throw ArgumentError('Title is required');
     if (title.trim().length > 200) {
       throw ArgumentError('Title too long (max 200)');
     }
-    return into(assignments).insert(
-      AssignmentsCompanion.insert(id: _uuid.v4(), title: title, dueAt: dueAt),
+    final id = _uuid.v4();
+    await into(assignments).insert(
+      AssignmentsCompanion.insert(id: id, title: title, dueAt: dueAt),
     );
+    return id;
   }
 
   @override

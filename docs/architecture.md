@@ -20,7 +20,7 @@ All persistent state lives in Drift over SQLite (`lib/core/db/`). There is no ba
 Domain rules enforced here and in feature logic:
 
 - GPA honors +0.5, capped at the grading scale's max (not a flat 5.0); invalid grades are filtered with a "skipped" count.
-- Deadline due dates pin to 23:59 end-of-day.
+- Deadline due dates default to 23:59 end-of-day with an optional time-of-day; save/completion/delete keep T-24h / T-1h reminders in sync.
 - Campus search input is trimmed internally.
 - Import caps: 512 KB file size, 2000 CSV rows, 1000 ICS events, 52 recurrences.
 
@@ -36,9 +36,20 @@ UI reads state through `flutter_riverpod` (2.5.1) providers layered over the dat
 
 `lib/core/import/` holds the CSV and ICS parsers with a pre-import preview step. Limits (size, row/event counts, recurrence expansion) are enforced before anything is written, and schedule conflicts are detected against existing courses. Column details: [import-format.md](import-format.md).
 
-## Notifications: stub status
+## Notifications
 
-`NotificationService` (`lib/core/notifications/`) exists and `flutter_local_notifications` (17.1.2) is wired as a dependency, but **the service has no callers yet — reminders are not scheduled**. The planned design is T-24h / T-1h local-only deadline reminders (no FCM while there is no backend); wiring it up is future work.
+Deadlines schedule T-24h and T-1h reminders through `ReminderScheduler`
+(`lib/core/notifications/reminder_scheduler.dart`), implemented by
+`NotificationService` over `flutter_local_notifications` (19.x) with
+`timezone`. Wiring: save schedules, complete cancels, reopen reschedules,
+delete cancels — all best-effort (the contract guarantees no throw, so
+notification failures can never break a save). Notification ids are
+derived deterministically from the assignment id
+(`reminderNotificationIds`), so scheduled ids still match their
+cancellations after a restart. Android uses inexact alarms (no
+exact-alarm permission); Android 13+ permission is requested on save.
+Windows shows toasts; on unpackaged builds `cancel` is a platform no-op
+(see `docs/windows.md`).
 
 Stack rationale (Flutter for the Android+Windows dual target, Drift for typed offline SQL, Riverpod for CRUD state) is recorded in the local-only `docs/adr/` notes, which are not committed.
 

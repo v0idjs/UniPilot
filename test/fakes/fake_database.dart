@@ -141,7 +141,7 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
   }
 
   @override
-  Future<int> createAssignment({
+  Future<String> createAssignment({
     required String title,
     required DateTime dueAt,
   }) async {
@@ -151,9 +151,10 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
       throw ArgumentError('Title too long (max 200)');
     }
     final now = DateTime.now();
+    final id = 'assignment-${_seq++}';
     _assignments.add(
       Assignment(
-        id: 'assignment-${_seq++}',
+        id: id,
         title: title,
         type: 'assignment',
         dueAt: dueAt,
@@ -164,7 +165,7 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
       ),
     );
     _assignmentsController.add(List<Assignment>.unmodifiable(_assignments));
-    return 1;
+    return id;
   }
 
   @override

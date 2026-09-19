@@ -81,6 +81,22 @@ class DeadlineListScreen extends ConsumerWidget {
                             ),
                           ),
                         );
+                        return;
+                      }
+                      // Keep reminders in sync: completed deadlines need no
+                      // reminder; reopened ones do. Best-effort, never throws.
+                      if (!a.completed) {
+                        await ref
+                            .read(reminderSchedulerProvider)
+                            .cancelDeadline(a.id);
+                      } else {
+                        await ref
+                            .read(reminderSchedulerProvider)
+                            .scheduleDeadline(
+                              assignmentId: a.id,
+                              title: a.title,
+                              dueAt: a.dueAt,
+                            );
                       }
                     },
                   ),
@@ -146,6 +162,17 @@ class _DeadlineDetailDialog extends ConsumerWidget {
               );
               return;
             }
+            if (!item.completed) {
+              await ref
+                  .read(reminderSchedulerProvider)
+                  .cancelDeadline(item.id);
+            } else {
+              await ref.read(reminderSchedulerProvider).scheduleDeadline(
+                    assignmentId: item.id,
+                    title: item.title,
+                    dueAt: item.dueAt,
+                  );
+            }
             if (!context.mounted) return;
             Navigator.pop(context);
           },
@@ -165,6 +192,7 @@ class _DeadlineDetailDialog extends ConsumerWidget {
               );
               return;
             }
+            await ref.read(reminderSchedulerProvider).cancelDeadline(item.id);
             if (!context.mounted) return;
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -288,7 +316,15 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
                 }
                 setState(() => _saving = true);
                 try {
-                  await ref.read(dbProvider).createAssignment(
+                  final newId = await ref.read(dbProvider).createAssignment(
+                        title: _title.text.trim(),
+                        dueAt: due,
+                      );
+                  // Schedule T-24h / T-1h reminders best-effort: the
+                  // scheduler contract guarantees this never throws, so a
+                  // notification failure can never break the save.
+                  await ref.read(reminderSchedulerProvider).scheduleDeadline(
+                        assignmentId: newId,
                         title: _title.text.trim(),
                         dueAt: due,
                       );

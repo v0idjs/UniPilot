@@ -34,9 +34,14 @@ CI currently runs analyze as non-failing (`|| true`), so warnings won't block a 
 
 No. Local SQLite is **unencrypted** — an accepted risk documented in [SECURITY.md](../SECURITY.md). Anyone with file access to your device can read the database file.
 
-## Do deadline notifications work yet?
+## Do deadline notifications work?
 
-Not yet. `NotificationService` exists but has no callers, so no reminders are scheduled. The planned design is T-24h / T-1h local-only reminders (no backend push); wiring it up is future work.
+Yes. Saving a deadline schedules T-24h and T-1h reminders (Android +
+Windows toasts, fully offline). Completing a deadline cancels its
+reminders; reopening reschedules; deleting cancels. Reminder delivery is
+best-effort and can never break saving. Past-due deadlines schedule
+nothing. On unpackaged Windows builds, cancelling an already-fired toast
+is a no-op (plugin limitation).
 
 ## How do releases work?
 

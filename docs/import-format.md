@@ -18,7 +18,11 @@ Caps: 512KB input, 2000 rows (truncated with a warning).
 Sample: `assets/samples/timetable_sample.csv`
 
 ## ICS
-Parses VEVENT with DTSTART/DTEND, SUMMARY, LOCATION, RRULE (weekly expansion, capped 52), TZID (wall-time preserved). Unfolding supported. Sample: `assets/samples/timetable_sample.ics`
+Parses VEVENT with DTSTART/DTEND, SUMMARY, LOCATION, RRULE (FREQ=WEEKLY
+expansion, capped at 52 occurrences with a warning), TZID (kept as
+wall time, no conversion). Folded lines are unfolded. EXDATE is not
+supported; non-weekly frequencies import as a single instance.
+Sample: `assets/samples/timetable_sample.ics`
 
 Caps: 512KB input, 1000 events (truncated with a warning). A weekly
 RRULE whose UNTIL is before DTSTART is rejected with an error and yields
@@ -28,7 +32,7 @@ Flow: Pick file → parse → preview table with errors → confirm → bulk ins
 
 ## Grading Scales
 - 4.0, 4.3, 5.0 presets + percentage + custom mapping.
-- Honors +0.5, capped at the active scale max (e.g. A+honors on 4.0 stays 4.0).
+- Honors +0.5 per course, capped at the active scale max (e.g. A+honors on 4.0 stays 4.0). Applies to every scale, including percentage and custom.
 - Invalid grades are filtered with an "N invalid skipped" note instead of crashing.
 - See `lib/features/gpa/grading_scales.dart`.
 
