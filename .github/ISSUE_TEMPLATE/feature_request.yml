@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an idea for UniPilot
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What student problem does this solve?
+      placeholder: I can't see my week at a glance without opening each course.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What should change? Keep offline-first in mind (no backend).
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other ways to solve it, and why they fit worse.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Schedule
+        - Deadlines
+        - GPA
+        - Campus
+        - Import (CSV/ICS)
+        - Notifications
+        - Build / CI
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups, examples from other apps, constraints.

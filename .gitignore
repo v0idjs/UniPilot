@@ -1,10 +1,39 @@
-# Node
-node_modules/
-dist/
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+coverage/
+
+# Generated code — regenerated in CI via
+# `dart run build_runner build --delete-conflicting-outputs`
+*.g.dart
+*.drift.dart
+*.freezed.dart
+
+# Platform build outputs
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/.symlinks/
+windows/flutter/generated_*
+linux/flutter/generated_*
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Signing secrets (never commit — see docs/release.md)
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+android/key.properties
+android/app/upload-keystore.jks
+android/app/debug.keystore
+secrets/
+
+# Logs
 *.log
-npm-debug.log*
-.env
-.env.local
+logs/
 
 # OS
 .DS_Store
@@ -14,43 +43,19 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-
-# Harness (local-only, do not commit)
-.opencode-ecc/
-AGENTS.md
-opencode.json
+*.tmp
 
 # Temp
 tmp/
 temp/
 
-# Flutter
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-pubspec.lock
-build/
-android/.gradle/
-windows/flutter/generated_*
-coverage/
-*.g.dart
-*.drift.dart
-*.freezed.dart
-
-# Secrets / keystores (never commit)
-*.jks
-*.keystore
-*.p12
-*.mobileprovision
-android/key.properties
-android/app/upload-keystore.jks
-android/app/debug.keystore
-secrets/
-.env.production
-
-# OS temp
-*.tmp
-/docs/adr
+# Local-only agent harness (project policy: never commit)
+.opencode-ecc/
+AGENTS.md
+opencode.json
 /.agents/
 /skills-lock.json
+
+# Internal working notes (ADRs and TDD evidence stay local)
+docs/adr/
+docs/testing/

@@ -2,6 +2,21 @@
 
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
+## Unreleased
+### Added
+- New docs: `docs/installation.md`, `docs/architecture.md`, `docs/development.md`, `docs/faq.md`
+- GitHub community files: PR template, bug report + feature request forms
+- Rewritten `README.md` with badges, setup steps, project structure, and full docs index
+
+### Changed
+- `README.md` now states no `.env` is needed and points to `docs/release.md` for Android signing secrets
+
+### Removed
+- Unused dev dependencies: `mockito`, `fake_async`, `riverpod_annotation`, `riverpod_generator`, `riverpod_lint`
+- Dead l10n scaffold: `l10n.yaml`, `lib/l10n/`, `flutter_localizations` dependency
+- Empty `integration_test/` and `assets/fonts/` directories; Node leftovers from `.gitignore`
+- `docs/adr/` and `docs/testing/` are local-only working notes (gitignored)
+
 ## v0.4.0 — 2026-09-17
 ### Added
 - Persistent release signing so Android updates install cleanly over previous releases

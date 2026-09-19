@@ -1,0 +1,67 @@
+name: Bug report
+description: Report something broken in UniPilot
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong?
+      placeholder: Deadline saved for today shows as overdue by the afternoon.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to trigger the bug.
+      placeholder: |
+        1. Add a deadline for today
+        2. Reopen the Deadlines tab after 12:00
+        3. See "Overdue" instead of "due today"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should happen instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Schedule
+        - Deadlines
+        - GPA
+        - Campus
+        - Import (CSV/ICS)
+        - Notifications
+        - Build / CI
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Device, OS, and app version.
+      placeholder: |
+        - Device: Pixel 7 / Windows 11 laptop
+        - OS: Android 14 / Windows 11 23H2
+        - App version: v0.4.0 (or commit hash)
+        - Flutter: 3.24.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues first
+          required: true
+        - label: I can reproduce on the latest `main`
+          required: false
