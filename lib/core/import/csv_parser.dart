@@ -80,10 +80,13 @@ class TimetableCsvParser {
     }
     List<List<dynamic>> table;
     try {
-      table = const CsvToListConverter().convert(csvText, eol: '\n', fieldDelimiter: effectiveDelimiter);
+      // shouldParseNumbers: false keeps every field a String. Otherwise
+      // times like 09.30 coerce to double 9.3 and parse as 09:03.
+      const converter = CsvToListConverter(shouldParseNumbers: false);
+      table = converter.convert(csvText, eol: '\n', fieldDelimiter: effectiveDelimiter);
       // Fallback if only one row detected but contains \r\n
       if (table.length == 1 && csvText.contains('\r\n')) {
-        table = const CsvToListConverter().convert(csvText, eol: '\r\n', fieldDelimiter: effectiveDelimiter);
+        table = converter.convert(csvText, eol: '\r\n', fieldDelimiter: effectiveDelimiter);
       }
     } catch (e) {
       return CsvParseResult(rows: [], errors: ['CSV parse error: $e']);
@@ -93,7 +96,8 @@ class TimetableCsvParser {
     if (table.length >= 2 && table[0].length == 1) {
       final alt = effectiveDelimiter == ',' ? ';' : ',';
       try {
-        final altTable = const CsvToListConverter().convert(csvText, fieldDelimiter: alt);
+        const altConverter = CsvToListConverter(shouldParseNumbers: false);
+        final altTable = altConverter.convert(csvText, fieldDelimiter: alt);
         if (altTable.isNotEmpty && altTable[0].length > table[0].length) {
           table = altTable;
         }

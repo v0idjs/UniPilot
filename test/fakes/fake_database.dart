@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:unipilot/core/db/app_database.dart';
 import 'package:unipilot/core/db/database_api.dart';
+import 'package:unipilot/core/db/validation.dart';
 
 /// Pure-Dart fake for widget tests.
 ///
@@ -41,14 +42,7 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
   @override
   Future<int> createCourse({required String code, required String name}) async {
     _checkOpen();
-    if (code.trim().isEmpty) throw ArgumentError('Course code is required');
-    if (name.trim().isEmpty) throw ArgumentError('Course name is required');
-    if (code.trim().length > 60) {
-      throw ArgumentError('Course code too long (max 60)');
-    }
-    if (name.trim().length > 120) {
-      throw ArgumentError('Course name too long (max 120)');
-    }
+    validateCourse(code: code, name: name);
     final now = DateTime.now();
     _courses.add(
       Course(
@@ -101,18 +95,11 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
     required int endMinutes,
   }) async {
     _checkOpen();
-    if (dayOfWeek < 1 || dayOfWeek > 7) {
-      throw ArgumentError('dayOfWeek must be 1..7 (got $dayOfWeek)');
-    }
-    if (startMinutes < 0 ||
-        startMinutes >= 1440 ||
-        endMinutes <= 0 ||
-        endMinutes > 1440) {
-      throw ArgumentError('Slot minutes must be within 0..1440');
-    }
-    if (endMinutes <= startMinutes) {
-      throw ArgumentError('endMinutes must be after startMinutes');
-    }
+    validateSlot(
+      dayOfWeek: dayOfWeek,
+      startMinutes: startMinutes,
+      endMinutes: endMinutes,
+    );
     _entries.add(
       ScheduleEntry(
         id: 'entry-${_seq++}',
@@ -146,10 +133,7 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
     required DateTime dueAt,
   }) async {
     _checkOpen();
-    if (title.trim().isEmpty) throw ArgumentError('Title is required');
-    if (title.trim().length > 200) {
-      throw ArgumentError('Title too long (max 200)');
-    }
+    validateAssignmentTitle(title);
     final now = DateTime.now();
     final id = 'assignment-${_seq++}';
     _assignments.add(
@@ -200,10 +184,7 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
   @override
   Future<int> createSemester({required String name}) async {
     _checkOpen();
-    if (name.trim().isEmpty) throw ArgumentError('Semester name is required');
-    if (name.trim().length > 120) {
-      throw ArgumentError('Semester name too long (max 120)');
-    }
+    validateSemesterName(name);
     _semesters.add(
       Semester(
         id: 'semester-${_seq++}',
@@ -245,13 +226,7 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
     required double credits,
   }) async {
     _checkOpen();
-    if (courseName.trim().isEmpty) {
-      throw ArgumentError('Course name is required');
-    }
-    if (grade.trim().isEmpty) throw ArgumentError('Grade is required');
-    if (credits <= 0 || credits > 100) {
-      throw ArgumentError('Credits must be > 0 and ≤ 100 (got $credits)');
-    }
+    validateGrade(courseName: courseName, grade: grade, credits: credits);
     _grades.add(
       CourseGrade(
         id: 'grade-${_seq++}',
