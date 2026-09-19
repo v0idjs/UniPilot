@@ -63,8 +63,10 @@ void main() {
 
       final dbs = <UniPilotDatabase>[real, fake];
       for (final db in dbs) {
-        await expectLater(
-          db.createCourse(code: '', name: 'Intro'),
+        // Note: expect(), not expectLater(): the guards throw synchronously
+        // before a Future is even returned.
+        expect(
+          () => db.createCourse(code: '', name: 'Intro'),
           throwsA(
             isA<ValidationError>().having((e) => e.field, 'field', 'code'),
           ),
@@ -81,12 +83,13 @@ void main() {
 
       await real.createCourse(code: 'CS101', name: 'Intro');
       await fake.createCourse(code: 'CS101', name: 'Intro');
-      final realCourseId = (await real.watchCourses().first).single.id;
-      final fakeCourseId = (await fake.watchCourses().first).single.id;
-
-      await expectLater(
-        real.createEntry(
-          courseId: realCourseId,
+      final realId = (await real.watchCourses().first).single.id;
+      final fakeId = (await fake.watchCourses().first).single.id;
+      // Note: expect(), not expectLater(): the guards throw synchronously
+      // before a Future is even returned.
+      expect(
+        () => real.createEntry(
+          courseId: realId,
           dayOfWeek: 8,
           startMinutes: 540,
           endMinutes: 600,
@@ -95,9 +98,9 @@ void main() {
           isA<ValidationError>().having((e) => e.field, 'field', 'dayOfWeek'),
         ),
       );
-      await expectLater(
-        fake.createEntry(
-          courseId: fakeCourseId,
+      expect(
+        () => fake.createEntry(
+          courseId: fakeId,
           dayOfWeek: 8,
           startMinutes: 540,
           endMinutes: 600,

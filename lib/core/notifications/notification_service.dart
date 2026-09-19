@@ -23,13 +23,14 @@ class NotificationService implements ReminderScheduler {
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     // Windows shows toasts via the plugin's C++/WinRT implementation.
-    // appUserModelId is required by the plugin (19.x) to register the
-    // toast activator; the Android application id is the stable choice.
+    // appUserModelId + guid are required by the plugin (19.x) to register
+    // the toast activator; both are fixed app constants.
     // (Non-const: keeps compiling whether or not the settings
     // constructors are const in the resolved plugin version.)
     final windowsSettings = WindowsInitializationSettings(
       appName: 'UniPilot',
       appUserModelId: 'com.unipilot.unipilot',
+      guid: '{8F4B2C1A-3D5E-4F70-9A1B-2C3D4E5F60718}',
     );
     final settings = InitializationSettings(
       android: androidSettings,

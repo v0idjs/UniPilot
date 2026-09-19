@@ -15,7 +15,11 @@ Tests under `test/` mirror this layout. Widget tests use `test/fakes/fake_databa
 
 All persistent state lives in Drift over SQLite (`lib/core/db/`). There is no backend, no network, and no auth — the app works fully offline.
 
-**Validation lives at the DB layer.** `AppDatabase.create*` methods throw `ArgumentError` on empty, oversize, or out-of-range input. UI validation is second-line only. The fake in `test/fakes/fake_database.dart` mirrors these guards — when you add a guard in `AppDatabase`, add the same `ArgumentError` in the fake or widget tests will diverge from prod.
+**Validation lives in one shared module.** `lib/core/db/validation.dart` holds every
+input guard, throwing typed `ValidationError`s (a field-carrying `ArgumentError`
+subclass, so old `isA<ArgumentError>()` expectations still hold). Both the real
+`AppDatabase` and the widget-test fake call these validators — add a guard here
+once and both stay in sync by construction. UI validation is second-line only.
 
 Domain rules enforced here and in feature logic:
 
