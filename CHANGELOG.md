@@ -3,6 +3,8 @@
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
+
+## v0.5.0 — 2026-09-19
 ### Added
 - Deadline reminders: T-24h / T-1h local notifications on Android and Windows, kept in sync on save, completion, reopen, and delete
 - Optional time-of-day on deadlines (defaults to 23:59), so exams can carry real start times
@@ -22,7 +24,8 @@ All notable changes to UniPilot. Format follows Keep a Changelog.
 - ICS doc comment no longer claims EXDATE support; non-weekly frequencies documented as single-instance imports
 
 ### Removed
-- Unused dev dependencies: `mockito`, `fake_async`, `riverpod_annotation`, `riverpod_generator`, `riverpod_lint`
+- Unused dev dependencies: `mockito`, `fake_async`, `riverpod_annotation`, `riverpod_generator`, `riverpod_lint`, plus the no-op `custom_lint` setup
+- Unused `cupertino_icons` package and the `ios/` stub (Android + Windows only)
 - Dead l10n scaffold: `l10n.yaml`, `lib/l10n/`, `flutter_localizations` dependency
 - Empty `integration_test/` and `assets/fonts/` directories; Node leftovers from `.gitignore`
 - `docs/adr/` and `docs/testing/` are local-only working notes (gitignored)
