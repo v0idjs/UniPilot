@@ -5,6 +5,7 @@ import 'package:unipilot/core/db/providers.dart';
 import 'package:unipilot/features/deadlines/deadline_list_screen.dart';
 
 import '../../fakes/fake_database.dart';
+import '../../fakes/fake_reminder_scheduler.dart';
 
 void main() {
   testWidgets('added deadline appears in deadlines list', (tester) async {
@@ -13,7 +14,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [dbProvider.overrideWithValue(db)],
+        overrides: [
+          dbProvider.overrideWithValue(db),
+          reminderSchedulerProvider.overrideWithValue(NoopReminderScheduler()),
+        ],
         child: const MaterialApp(home: DeadlineListScreen()),
       ),
     );
@@ -47,7 +51,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [dbProvider.overrideWithValue(db)],
+        overrides: [
+          dbProvider.overrideWithValue(db),
+          reminderSchedulerProvider.overrideWithValue(NoopReminderScheduler()),
+        ],
         child: const MaterialApp(home: DeadlineListScreen()),
       ),
     );

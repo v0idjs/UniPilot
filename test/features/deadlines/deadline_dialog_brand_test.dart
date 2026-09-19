@@ -6,6 +6,7 @@ import 'package:unipilot/features/deadlines/deadline_list_screen.dart';
 import 'package:unipilot/widgets/brand_logo.dart';
 
 import '../../fakes/fake_database.dart';
+import '../../fakes/fake_reminder_scheduler.dart';
 
 Future<void> _pump(WidgetTester tester) async {
   await tester.pump();
@@ -23,7 +24,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [dbProvider.overrideWithValue(db)],
+        overrides: [
+          dbProvider.overrideWithValue(db),
+          reminderSchedulerProvider.overrideWithValue(NoopReminderScheduler()),
+        ],
         child: const MaterialApp(home: DeadlineListScreen()),
       ),
     );

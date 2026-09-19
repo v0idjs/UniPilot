@@ -2,36 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unipilot/core/db/providers.dart';
-import 'package:unipilot/core/notifications/reminder_scheduler.dart';
 import 'package:unipilot/features/deadlines/deadline_list_screen.dart';
 
 import '../../fakes/fake_database.dart';
-
-class RecordingScheduler implements ReminderScheduler {
-  final scheduled = <({String id, String title, DateTime dueAt})>[];
-  final canceled = <String>[];
-
-  @override
-  Future<void> scheduleDeadline({
-    required String assignmentId,
-    required String title,
-    required DateTime dueAt,
-  }) async {
-    scheduled.add((id: assignmentId, title: title, dueAt: dueAt));
-  }
-
-  @override
-  Future<void> cancelDeadline(String assignmentId) async {
-    canceled.add(assignmentId);
-  }
-}
+import '../../fakes/fake_reminder_scheduler.dart';
 
 Future<void> _pump(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 500));
 }
 
-ProviderScope _scope(FakeUniPilotDatabase db, RecordingScheduler rs) {
+ProviderScope _scope(FakeUniPilotDatabase db, RecordingReminderScheduler rs) {
   return ProviderScope(
     overrides: [
       dbProvider.overrideWithValue(db),
@@ -45,7 +26,7 @@ void main() {
   testWidgets('saving a deadline schedules a reminder', (tester) async {
     final db = FakeUniPilotDatabase();
     addTearDown(db.close);
-    final rs = RecordingScheduler();
+    final rs = RecordingReminderScheduler();
 
     await tester.pumpWidget(_scope(db, rs));
     await _pump(tester);
@@ -73,7 +54,7 @@ void main() {
   testWidgets('completing a deadline cancels its reminder', (tester) async {
     final db = FakeUniPilotDatabase();
     addTearDown(db.close);
-    final rs = RecordingScheduler();
+    final rs = RecordingReminderScheduler();
     final id = await db.createAssignment(
       title: 'Essay',
       dueAt: DateTime.now().add(const Duration(days: 7)),
@@ -92,7 +73,7 @@ void main() {
   testWidgets('deleting a deadline cancels its reminder', (tester) async {
     final db = FakeUniPilotDatabase();
     addTearDown(db.close);
-    final rs = RecordingScheduler();
+    final rs = RecordingReminderScheduler();
     final id = await db.createAssignment(
       title: 'Essay',
       dueAt: DateTime.now().add(const Duration(days: 7)),

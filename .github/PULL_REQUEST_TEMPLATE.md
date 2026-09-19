@@ -19,12 +19,12 @@
 - [ ] `dart format .`
 - [ ] `flutter analyze` — no new warnings
 - [ ] `flutter test --coverage` — all green
-- [ ] Widget tests use `test/fakes/fake_database.dart`, not real Drift
+- [ ] Widget tests use `test/fakes/fake_database.dart` (not real Drift) and `test/fakes/fake_reminder_scheduler.dart` (not the real notification plugin)
 
 ## Checklist
 
 - [ ] Tests added first (TDD) or updated; coverage stays 80%+
-- [ ] New `AppDatabase` validation guards mirrored in `test/fakes/fake_database.dart`
+- [ ] New validation guards added to `lib/core/db/validation.dart` (shared by the real DB and the fake — never inline them)
 - [ ] No hardcoded secrets; inputs validated at UI **and** DB layers
 - [ ] Follows Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`)
 - [ ] Docs updated if behavior changed (`README.md`, `docs/`, `CHANGELOG.md` under `Unreleased`)
