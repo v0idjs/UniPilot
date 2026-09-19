@@ -36,12 +36,12 @@ No. Local SQLite is **unencrypted** — an accepted risk documented in [SECURITY
 
 ## Do deadline notifications work?
 
-Yes. Saving a deadline schedules T-24h and T-1h reminders (Android +
-Windows toasts, fully offline). Completing a deadline cancels its
-reminders; reopening reschedules; deleting cancels. Reminder delivery is
-best-effort and can never break saving. Past-due deadlines schedule
-nothing. On unpackaged Windows builds, cancelling an already-fired toast
-is a no-op (plugin limitation).
+On Android, yes. Saving a deadline schedules T-24h and T-1h reminders
+(fully offline). Completing a deadline cancels its reminders; reopening
+reschedules; deleting cancels. Reminder delivery is best-effort and can
+never break saving. Past-due deadlines schedule nothing. Windows toasts
+are deferred (plugin incompatibility with this project's toolchain —
+see the architecture notes).
 
 ## How do releases work?
 

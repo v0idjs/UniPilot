@@ -4,6 +4,11 @@ All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
 
+## v0.5.2 — 2026-09-19
+### Fixed
+- Windows release build: reverted `flutter_local_notifications` 19.x → 17.x — the 19.x Windows FFI bindings crash the AOT compiler (`NativeLaunchDetails`, illegal cid), breaking `flutter build windows` on Flutter 3.24 and 3.27. Reminders are Android-only until the toolchain catches up (follow-up issue filed)
+- Flutter pinned 3.24.0 → 3.27.4 across CI, release workflows, and docs
+
 ## v0.5.1 — 2026-09-19
 ### Added
 - Shared `lib/core/db/validation.dart`: one validation module for the real DB and the widget-test fake, throwing typed `ValidationError(field)` (an `ArgumentError` subclass, so old expectations hold)

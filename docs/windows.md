@@ -39,15 +39,12 @@ If the window opens but stays blank:
 
 ## Notifications on Windows
 
-Deadline reminders use Windows toast notifications (plugin v19+). Two
-caveats:
-
-1. The `windows/runner` tree is scaffolded by `flutter create` in CI, so
-   no toast manifest work is needed in this repo.
-2. On unpackaged builds (plain `flutter run` / the release zip, not
-   MSIX), Windows shows toasts but `cancel` is a platform no-op — a
-   deleted deadline's already-fired toast cannot be retracted. This is a
-   plugin limitation, not an app bug.
+Deadline reminders do not fire on Windows yet. The plugin version with
+Windows toast support crashes this project's AOT compiler (verified on
+Flutter 3.24 and 3.27), so notifications stay Android-only until the
+toolchain catches up — tracked as a follow-up issue. Saving, completing,
+and deleting deadlines all work normally on Windows; only the toast is
+missing.
 
 ## Icons
 

@@ -14,7 +14,7 @@ Offline-first Flutter app for students: class schedule, deadline tracking, GPA c
 ## Features
 
 - **Smart Schedule** — daily/weekly views, next-class card (auto-refreshes every 60s), manual course CRUD, CSV/ICS import with preview and conflict detection.
-- **Deadline Tracker** — assignments and exams with countdowns and T-24h / T-1h reminders; due dates default to 23:59 with an optional time-of-day (e.g. a 09:00 exam).
+- **Deadline Tracker** — assignments and exams with countdowns and T-24h / T-1h reminders (Android); due dates default to 23:59 with an optional time-of-day (e.g. a 09:00 exam).
 - **GPA Calculator** — per-semester and cumulative GPA across 4.0 / 4.3 / 5.0 / percentage / custom scales; honors +0.5 capped at the scale max; invalid grades are skipped with a count; what-if planning.
 - **Campus Finder** — searchable offline room list (local JSON + static map stub). Search input is trimmed automatically.
 

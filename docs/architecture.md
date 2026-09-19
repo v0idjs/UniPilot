@@ -44,7 +44,7 @@ UI reads state through `flutter_riverpod` (2.5.1) providers layered over the dat
 
 Deadlines schedule T-24h and T-1h reminders through `ReminderScheduler`
 (`lib/core/notifications/reminder_scheduler.dart`), implemented by
-`NotificationService` over `flutter_local_notifications` (19.x) with
+`NotificationService` over `flutter_local_notifications` with
 `timezone`. Wiring: save schedules, complete cancels, reopen reschedules,
 delete cancels — all best-effort (the contract guarantees no throw, so
 notification failures can never break a save). Notification ids are
@@ -52,8 +52,10 @@ derived deterministically from the assignment id
 (`reminderNotificationIds`), so scheduled ids still match their
 cancellations after a restart. Android uses inexact alarms (no
 exact-alarm permission); Android 13+ permission is requested on save.
-Windows shows toasts; on unpackaged builds `cancel` is a platform no-op
-(see `docs/windows.md`).
+Reminders currently fire on Android only: plugin 19.x (first version
+with Windows toasts) crashes this project's AOT compiler (tracked in
+the Windows-toast follow-up issue), so the plugin stays on 17.x until
+the toolchain catches up.
 
 Stack rationale (Flutter for the Android+Windows dual target, Drift for typed offline SQL, Riverpod for CRUD state) is recorded in the local-only `docs/adr/` notes, which are not committed.
 

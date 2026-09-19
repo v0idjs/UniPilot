@@ -1,7 +1,7 @@
 name: unipilot
 description: UniPilot — Your Personal University Co-Pilot. Offline-first schedule, deadlines, GPA and campus helper.
 publish_to: 'none'
-version: 0.5.1+22
+version: 0.5.2+23
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
@@ -19,8 +19,8 @@ dependencies:
   intl: ^0.19.0
   uuid: ^4.5.1
   csv: ^6.0.0
-  timezone: ^0.10.0
-  flutter_local_notifications: ^19.5.0
+  timezone: ^0.9.4
+  flutter_local_notifications: ^17.1.2
   flutter_svg: ^2.0.10+1
   window_manager: ^0.4.2
 

@@ -5,11 +5,14 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import '../utils/time.dart';
 import 'reminder_scheduler.dart';
 
-/// Plugin-backed [ReminderScheduler]: Android + Windows toasts.
+/// Plugin-backed [ReminderScheduler]: Android toasts.
 ///
 /// Android uses inexact alarms (no exact-alarm permission needed).
-/// Windows toasts need no runtime permission; note that on unpackaged
-/// (non-MSIX) Windows builds `cancel` is a platform no-op.
+/// Windows toasts are deferred: plugin 19.x (the first version with a
+/// Windows implementation) crashes this project's AOT compiler
+/// (see #16), so the plugin stays on 17.x — Android-only — until the
+/// toolchain catches up. `scheduleDeadline`/`cancelDeadline` degrade
+/// silently on unsupported platforms.
 class NotificationService implements ReminderScheduler {
   final FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
@@ -22,24 +25,11 @@ class NotificationService implements ReminderScheduler {
     tz_data.initializeTimeZones();
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    // Windows shows toasts via the plugin's C++/WinRT implementation.
-    // appUserModelId + guid are required by the plugin (19.x) to register
-    // the toast activator; both are fixed app constants.
-    // (Non-const: keeps compiling whether or not the settings
-    // constructors are const in the resolved plugin version.)
-    final windowsSettings = WindowsInitializationSettings(
-      appName: 'UniPilot',
-      appUserModelId: 'com.unipilot.unipilot',
-      guid: '{8F4B2C1A-3D5E-4F70-9A1B-2C3D4E5F60718}',
-    );
-    final settings = InitializationSettings(
-      android: androidSettings,
-      windows: windowsSettings,
-    );
+    const settings = InitializationSettings(android: androidSettings);
     try {
       await _plugin.initialize(settings);
     } catch (e) {
-      // Unsupported platform (e.g. Linux): reminders degrade silently.
+      // Unsupported platform: reminders degrade silently.
       debugPrint('Notifications unavailable on this platform: $e');
     }
     _initialized = true;
@@ -105,10 +95,7 @@ class NotificationService implements ReminderScheduler {
       importance: Importance.high,
       priority: Priority.high,
     );
-    final details = NotificationDetails(
-      android: androidDetails,
-      windows: WindowsNotificationDetails(),
-    );
+    const details = NotificationDetails(android: androidDetails);
     await _plugin.zonedSchedule(
       id,
       'Upcoming: $title',
@@ -116,6 +103,8 @@ class NotificationService implements ReminderScheduler {
       scheduled,
       details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
