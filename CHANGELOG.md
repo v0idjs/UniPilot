@@ -4,12 +4,22 @@ All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
 ### Added
+- Deadline reminders: T-24h / T-1h local notifications on Android and Windows, kept in sync on save, completion, reopen, and delete
+- Optional time-of-day on deadlines (defaults to 23:59), so exams can carry real start times
+- ICS truncation warnings when RRULE recurrences are capped at 52
 - New docs: `docs/installation.md`, `docs/architecture.md`, `docs/development.md`, `docs/faq.md`
 - GitHub community files: PR template, bug report + feature request forms
 - Rewritten `README.md` with badges, setup steps, project structure, and full docs index
 
 ### Changed
+- `flutter_local_notifications` 17.x → 19.x (adds Windows toast support) and `timezone` 0.9 → 0.10; no Flutter upgrade needed (19.x supports Flutter 3.22+)
+- `createAssignment` now returns the new row id (`Future<String>`) to tie reminders to rows
 - `README.md` now states no `.env` is needed and points to `docs/release.md` for Android signing secrets
+- `SECURITY.md` documents the Android Auto Backup behavior for the unencrypted database
+
+### Fixed
+- `docs/architecture.md` and `docs/faq.md` no longer link to the gitignored `docs/adr/` notes
+- ICS doc comment no longer claims EXDATE support; non-weekly frequencies documented as single-instance imports
 
 ### Removed
 - Unused dev dependencies: `mockito`, `fake_async`, `riverpod_annotation`, `riverpod_generator`, `riverpod_lint`
