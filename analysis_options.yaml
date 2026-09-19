@@ -38,6 +38,3 @@ linter:
     - prefer_single_quotes
     - sort_child_properties_last
     - use_full_hex_values_for_flutter_colors
-
-custom_lint:
-  enable_all_lint_rules: false
