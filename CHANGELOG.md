@@ -4,6 +4,19 @@ All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
 
+## v0.5.1 — 2026-09-19
+### Added
+- Shared `lib/core/db/validation.dart`: one validation module for the real DB and the widget-test fake, throwing typed `ValidationError(field)` (an `ArgumentError` subclass, so old expectations hold)
+- `test/core/validation_test.dart` locking error types, fields, and real-vs-fake parity
+
+### Fixed
+- Windows toast init passes the plugin-required `appUserModelId` + `guid` (missing params broke every widget test's compilation)
+- CSV times like `09.30` no longer coerce to double `9.3` (parsed as 09:03); the parser keeps all fields as strings
+- Validation parity tests use `expect()` for guards that throw synchronously
+
+### Changed
+- `docs/architecture.md` documents the shared validation module
+
 ## v0.5.0 — 2026-09-19
 ### Added
 - Deadline reminders: T-24h / T-1h local notifications on Android and Windows, kept in sync on save, completion, reopen, and delete
