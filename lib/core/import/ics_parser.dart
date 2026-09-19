@@ -1,5 +1,8 @@
 /// Minimal ICS (iCalendar) parser for timetable VEVENTs.
-/// Supports DTSTART/DTEND, SUMMARY, LOCATION, RRULE (weekly), TZID, EXDATE.
+/// Supports DTSTART/DTEND, SUMMARY, LOCATION, RRULE (FREQ=WEEKLY only —
+/// other frequencies import as a single instance), TZID (kept as wall
+/// time, no conversion). EXDATE is not supported.
+/// Recurrences are capped at 52 with a warning.
 /// No external deps — keeps offline footprint small.
 class IcsEvent {
   final String summary;
@@ -149,6 +152,11 @@ class IcsParser {
     // tryParse: an over-long digit run overflows int and yields null,
     // which we clamp to the maximum instead of throwing.
     int count = int.tryParse(countMatch?.group(1) ?? '1') ?? maxRecurrences;
+    if (count > maxRecurrences) {
+      errors.add(
+        'RRULE COUNT=$count truncated to $maxRecurrences: ${e.summary}',
+      );
+    }
     count = count.clamp(1, maxRecurrences);
     if (count <= 1 && untilMatch != null) {
       final until = _parseDate(untilMatch.group(1)!.trim(), null);
@@ -159,7 +167,12 @@ class IcsParser {
         }
         final days = until.difference(e.start).inDays;
         count = (days ~/ 7) + 1;
-        if (count > 52) count = 52;
+        if (count > 52) {
+          errors.add(
+            'RRULE UNTIL range truncated to 52 occurrences: ${e.summary}',
+          );
+          count = 52;
+        }
       }
     }
     if (count <= 1) return [e];

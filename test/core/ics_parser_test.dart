@@ -51,6 +51,27 @@ void main() {
     expect(r.events.length, 52);
   });
 
+  test('warns when COUNT is truncated to 52', () {
+    const ics = 'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:LongCourse\nRRULE:FREQ=WEEKLY;COUNT=100\nEND:VEVENT\nEND:VCALENDAR';
+    final r = parser.parse(ics);
+    expect(r.events.length, 52);
+    expect(r.errors.any((e) => e.contains('truncated to 52')), isTrue);
+  });
+
+  test('warns when UNTIL range is truncated to 52', () {
+    const ics = 'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:YearLong\nRRULE:FREQ=WEEKLY;UNTIL=20270915T090000\nEND:VEVENT\nEND:VCALENDAR';
+    final r = parser.parse(ics);
+    expect(r.events.length, 52);
+    expect(r.errors.any((e) => e.contains('truncated to 52')), isTrue);
+  });
+
+  test('small COUNT produces no truncation warning', () {
+    const ics = 'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:Short\nRRULE:FREQ=WEEKLY;COUNT=3\nEND:VEVENT\nEND:VCALENDAR';
+    final r = parser.parse(ics);
+    expect(r.events.length, 3);
+    expect(r.errors, isEmpty);
+  });
+
   test('UNTIL before DTSTART returns empty events plus error', () {
     const ics =
         'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20250915T090000\nDTEND:20250915T103000\nSUMMARY:CS101\nRRULE:FREQ=WEEKLY;UNTIL=20250901T090000\nEND:VEVENT\nEND:VCALENDAR';

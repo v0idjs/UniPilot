@@ -36,7 +36,7 @@ No. Local SQLite is **unencrypted** — an accepted risk documented in [SECURITY
 
 ## Do deadline notifications work yet?
 
-Not yet. `NotificationService` exists but has no callers, so no reminders are scheduled. The T-24h / T-1h design is captured in [adr/002-notifications.md](adr/002-notifications.md); wiring it up is future work.
+Not yet. `NotificationService` exists but has no callers, so no reminders are scheduled. The planned design is T-24h / T-1h local-only reminders (no backend push); wiring it up is future work.
 
 ## How do releases work?
 

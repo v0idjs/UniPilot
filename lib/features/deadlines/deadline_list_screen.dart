@@ -193,8 +193,9 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
   DateTime? _due;
   bool _saving = false;
 
-  /// Deadlines are date-only in the UI; pin them to end-of-day so a
-  /// deadline "today" does not read overdue by the afternoon.
+  /// Deadlines default to end-of-day so a deadline "today" does not read
+  /// overdue by the afternoon; the user can optionally pick a real
+  /// time-of-day (e.g. a 09:00 exam start).
   static DateTime _endOfDay(DateTime d) =>
       DateTime(d.year, d.month, d.day, 23, 59);
   @override
@@ -231,6 +232,38 @@ class _AddDeadlineFormState extends ConsumerState<_AddDeadlineForm> {
         },
         child: Text(
           _due == null ? 'Pick due date' : formatDueDate(_due!.toLocal()),
+        ),
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton(
+        onPressed: _due == null
+            ? null
+            : () async {
+                final current = TimeOfDay(
+                  hour: _due!.hour,
+                  minute: _due!.minute,
+                );
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: current,
+                );
+                if (picked != null) {
+                  setState(
+                    () => _due = DateTime(
+                      _due!.year,
+                      _due!.month,
+                      _due!.day,
+                      picked.hour,
+                      picked.minute,
+                    ),
+                  );
+                }
+              },
+        child: Text(
+          _due == null
+              ? 'Pick a date first'
+              : 'Time: ${formatMinutes(_due!.hour * 60 + _due!.minute)}'
+                  ' (optional)',
         ),
       ),
       const SizedBox(height: 12),

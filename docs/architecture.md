@@ -38,6 +38,8 @@ UI reads state through `flutter_riverpod` (2.5.1) providers layered over the dat
 
 ## Notifications: stub status
 
-`NotificationService` (`lib/core/notifications/`) exists and `flutter_local_notifications` (17.1.2) is wired as a dependency, but **the service has no callers yet — reminders are not scheduled**. The T-24h / T-1h deadline reminder design is recorded in [adr/002-notifications.md](adr/002-notifications.md); wiring it up is future work.
+`NotificationService` (`lib/core/notifications/`) exists and `flutter_local_notifications` (17.1.2) is wired as a dependency, but **the service has no callers yet — reminders are not scheduled**. The planned design is T-24h / T-1h local-only deadline reminders (no FCM while there is no backend); wiring it up is future work.
 
-Related: [adr/001-stack.md](adr/001-stack.md) (why Flutter + Drift + Riverpod), [development.md](development.md), [faq.md](faq.md).
+Stack rationale (Flutter for the Android+Windows dual target, Drift for typed offline SQL, Riverpod for CRUD state) is recorded in the local-only `docs/adr/` notes, which are not committed.
+
+Related: [development.md](development.md), [faq.md](faq.md).

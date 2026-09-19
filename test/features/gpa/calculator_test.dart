@@ -108,5 +108,28 @@ void main() {
       final courses = [CourseInput(grade: 'A', credits: 3, isHonors: true)];
       expect(calculateGpa(courses, s), 4.0);
     });
+
+    test('honors A+ on 4.3 caps at 4.3', () {
+      // Gpa43Scale A+ = 4.3, +0.5 would be 4.8 without the cap.
+      final courses = [CourseInput(grade: 'A+', credits: 3, isHonors: true)];
+      expect(calculateGpa(courses, Gpa43Scale()), 4.3);
+    });
+
+    test('honors B+ on 4.3 bumps without clamping', () {
+      // Gpa43Scale B+ = 3.3, +0.5 = 3.8.
+      final courses = [CourseInput(grade: 'B+', credits: 3, isHonors: true)];
+      expect(calculateGpa(courses, Gpa43Scale()), 3.8);
+    });
+
+    test('honors applies per course on percentage scale', () {
+      // Percentage 95 -> 4.0 points, +0.5 capped at scale max 4.0.
+      final scale = PercentageScale();
+      expect(scale.maxPoints, 4.0);
+      final capped = [CourseInput(grade: '95', credits: 3, isHonors: true)];
+      expect(calculateGpa(capped, scale), 4.0);
+      // Percentage 82 -> 3.3 points, +0.5 = 3.8 (no cap hit).
+      final bumped = [CourseInput(grade: '82', credits: 3, isHonors: true)];
+      expect(calculateGpa(bumped, scale), 3.8);
+    });
   });
 }

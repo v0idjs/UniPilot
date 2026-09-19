@@ -15,3 +15,13 @@ on the device, stored unencrypted. No account, backend, or network
 sync exists, so there are no credentials or tokens to protect. Timetable
 imports are capped by size and row count, and user input is length-limited
 before storage.
+
+## Android Auto Backup
+
+Android's Auto Backup is left at its default (enabled) and no backup
+rules are shipped, so the unencrypted database file may be uploaded to
+the user's Google Drive as part of device backup. This is accepted for
+v1 — it preserves student data across reinstalls — but be aware the
+backup is only as private as the Google account holding it. Disabling
+backup for the database, or encrypting it at rest, is deferred future
+work; do not treat the local database as confidential storage.

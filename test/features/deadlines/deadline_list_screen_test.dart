@@ -40,4 +40,39 @@ void main() {
     // Flush the confirmation snackbar timer before teardown.
     await tester.pump(const Duration(seconds: 5));
   });
+
+  testWidgets('default deadline pins to 23:59 end-of-day', (tester) async {
+    final db = FakeUniPilotDatabase();
+    addTearDown(db.close);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [dbProvider.overrideWithValue(db)],
+        child: const MaterialApp(home: DeadlineListScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.text('Add Deadline'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // Time picker stays disabled until a date is chosen.
+    expect(find.text('Pick a date first'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Title'),
+      'Exam',
+    );
+    // Save without picking: the fallback path must pin 23:59, not midnight.
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    final items = await db.watchAssignments().first;
+    expect(items.single.dueAt.hour, 23);
+    expect(items.single.dueAt.minute, 59);
+    await tester.pump(const Duration(seconds: 5));
+  });
 }
