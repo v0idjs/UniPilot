@@ -222,7 +222,7 @@ jobs:
         shell: bash
       - run: flutter test --coverage
         shell: bash
-      - run: flutter build windows --release
+      - run: flutter build windows --release -v
 
       - name: Zip Windows build
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath unipilot-windows.zip
