@@ -5,8 +5,7 @@ void main() {
   final parser = TimetableCsvParser();
 
   test('parses valid CSV with header aliases', () {
-    const csv = 'course,subject,day,start,end\nCS101,Intro,Mon,09:00,10:30';
-    // Actually header: code,name,day,start,end
+    // Header aliases: code,name,day,start,end
     const csv2 = 'code,name,day,start,end\nCS101,Intro to CS,Mon,09:00,10:30';
     final r = parser.parse(csv2);
     expect(r.errors, isEmpty);

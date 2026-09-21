@@ -483,9 +483,9 @@ class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
                   try {
                     final db = ref.read(dbProvider);
                     final courses =
-                        ref.read(coursesProvider).valueOrNull ?? [];
+                        ref.read(coursesProvider).value ?? [];
                     final entries =
-                        ref.read(entriesProvider).valueOrNull ?? [];
+                        ref.read(entriesProvider).value ?? [];
                     final slots = toSlots(courses, entries);
                     final candidate = ScheduleSlot(
                       id: 'new',

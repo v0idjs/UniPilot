@@ -5,14 +5,11 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import '../utils/time.dart';
 import 'reminder_scheduler.dart';
 
-/// Plugin-backed [ReminderScheduler]: Android toasts.
+/// Plugin-backed [ReminderScheduler]: Android + Windows toasts.
 ///
 /// Android uses inexact alarms (no exact-alarm permission needed).
-/// Windows toasts are deferred: plugin 19.x (the first version with a
-/// Windows implementation) crashes this project's AOT compiler
-/// (see #16), so the plugin stays on 17.x — Android-only — until the
-/// toolchain catches up. `scheduleDeadline`/`cancelDeadline` degrade
-/// silently on unsupported platforms.
+/// Windows toasts need no runtime permission; on unpackaged (non-MSIX)
+/// Windows builds `cancel` is a platform no-op.
 class NotificationService implements ReminderScheduler {
   final FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
@@ -25,11 +22,23 @@ class NotificationService implements ReminderScheduler {
     tz_data.initializeTimeZones();
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const settings = InitializationSettings(android: androidSettings);
+    // Windows shows toasts via the plugin's C++/WinRT implementation.
+    // appUserModelId + guid are required; the guid must be a bare
+    // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx string (no braces) or the
+    // native side rejects it.
+    const windowsSettings = WindowsInitializationSettings(
+      appName: 'UniPilot',
+      appUserModelId: 'com.unipilot.unipilot',
+      guid: '8f4b2c1a-3d5e-4f70-9a1b-2c3d4e5f60718',
+    );
+    const settings = InitializationSettings(
+      android: androidSettings,
+      windows: windowsSettings,
+    );
     try {
-      await _plugin.initialize(settings);
+      await _plugin.initialize(settings: settings);
     } catch (e) {
-      // Unsupported platform: reminders degrade silently.
+      // Unsupported platform (e.g. Linux): reminders degrade silently.
       debugPrint('Notifications unavailable on this platform: $e');
     }
     _initialized = true;
@@ -73,7 +82,7 @@ class NotificationService implements ReminderScheduler {
     try {
       await init();
       for (var i = 0; i < reminderOffsets.length; i++) {
-        await _plugin.cancel(reminderNotificationId(assignmentId, i));
+        await _plugin.cancel(id: reminderNotificationId(assignmentId, i));
       }
     } catch (e) {
       debugPrint('Cancel deadline reminder failed: $e');
@@ -95,16 +104,17 @@ class NotificationService implements ReminderScheduler {
       importance: Importance.high,
       priority: Priority.high,
     );
-    const details = NotificationDetails(android: androidDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      windows: WindowsNotificationDetails(),
+    );
     await _plugin.zonedSchedule(
-      id,
-      'Upcoming: $title',
-      'Due ${formatDueDate(dueAt.toLocal())}',
-      scheduled,
-      details,
+      id: id,
+      title: 'Upcoming: $title',
+      body: 'Due ${formatDueDate(dueAt.toLocal())}',
+      scheduledDate: scheduled,
+      notificationDetails: details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
