@@ -10,7 +10,12 @@ class IcsEvent {
   final DateTime end;
   final String? location;
   final String? rrule;
-  const IcsEvent({required this.summary, required this.start, required this.end, this.location, this.rrule});
+  const IcsEvent(
+      {required this.summary,
+      required this.start,
+      required this.end,
+      this.location,
+      this.rrule});
 }
 
 class IcsParseResult {
@@ -27,13 +32,20 @@ class IcsParser {
   IcsParseResult parse(String text) {
     final errors = <String>[];
     final events = <IcsEvent>[];
-    if (text.trim().isEmpty) return const IcsParseResult(events: [], errors: ['Empty ICS']);
+    if (text.trim().isEmpty)
+      return const IcsParseResult(events: [], errors: ['Empty ICS']);
     if (text.length > maxInputBytes) {
-      return const IcsParseResult(events: [], errors: ['File too large (max 512KB)']);
+      return const IcsParseResult(
+          events: [], errors: ['File too large (max 512KB)']);
     }
     // Unfold lines (RFC 5545)
-    final unfolded = text.replaceAll('\r\n ', '').replaceAll('\n ', '').replaceAll('\r\n\t', '').replaceAll('\n\t', '');
-    final lines = unfolded.split(RegExp(r'\r?\n')).map((e) => e.trim()).toList();
+    final unfolded = text
+        .replaceAll('\r\n ', '')
+        .replaceAll('\n ', '')
+        .replaceAll('\r\n\t', '')
+        .replaceAll('\n\t', '');
+    final lines =
+        unfolded.split(RegExp(r'\r?\n')).map((e) => e.trim()).toList();
     Map<String, String>? current;
     for (final line in lines) {
       if (line == 'BEGIN:VEVENT') {

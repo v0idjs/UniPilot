@@ -62,9 +62,7 @@ class DeadlineListScreen extends ConsumerWidget {
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
                     ),
-                    tooltip: a.completed
-                        ? 'Mark incomplete'
-                        : 'Mark complete',
+                    tooltip: a.completed ? 'Mark incomplete' : 'Mark complete',
                     onPressed: () async {
                       try {
                         await ref.read(dbProvider).setAssignmentCompleted(
@@ -163,9 +161,7 @@ class _DeadlineDetailDialog extends ConsumerWidget {
               return;
             }
             if (!item.completed) {
-              await ref
-                  .read(reminderSchedulerProvider)
-                  .cancelDeadline(item.id);
+              await ref.read(reminderSchedulerProvider).cancelDeadline(item.id);
             } else {
               await ref.read(reminderSchedulerProvider).scheduleDeadline(
                     assignmentId: item.id,

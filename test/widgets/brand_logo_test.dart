@@ -35,10 +35,12 @@ void main() {
       findsOneWidget,
     );
     final sized = tester.widget<SizedBox>(
-      find.ancestor(
-        of: find.byType(SvgPicture),
-        matching: find.byType(SizedBox),
-      ).first,
+      find
+          .ancestor(
+            of: find.byType(SvgPicture),
+            matching: find.byType(SizedBox),
+          )
+          .first,
     );
     expect(sized.width, 40);
   });

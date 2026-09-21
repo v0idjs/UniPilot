@@ -23,6 +23,7 @@ jobs:
         shell: bash
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
-      - run: dart format .
-      - run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test --coverage
+      - run: dart tool/coverage_gate.dart

@@ -5,7 +5,11 @@ class CourseInput {
   final double credits;
   final bool isPassFail;
   final bool isHonors;
-  const CourseInput({required this.grade, this.credits = 3.0, this.isPassFail = false, this.isHonors = false});
+  const CourseInput(
+      {required this.grade,
+      this.credits = 3.0,
+      this.isPassFail = false,
+      this.isHonors = false});
 }
 
 double calculateGpa(List<CourseInput> courses, GradingScale scale) {
@@ -27,13 +31,18 @@ double calculateGpa(List<CourseInput> courses, GradingScale scale) {
   return double.parse(gpa.toStringAsFixed(2));
 }
 
-double calculateCumulative(List<List<CourseInput>> semesters, List<GradingScale> scales) {
+double calculateCumulative(
+    List<List<CourseInput>> semesters, List<GradingScale> scales) {
   if (semesters.isEmpty) return 0.0;
   // Weight each semester's GPA correctly by credits — compute total points across all semesters.
   double totalPoints = 0;
   double totalCredits = 0;
   for (var i = 0; i < semesters.length; i++) {
-    final scale = i < scales.length ? scales[i] : scales.isNotEmpty ? scales.last : Gpa40Scale();
+    final scale = i < scales.length
+        ? scales[i]
+        : scales.isNotEmpty
+            ? scales.last
+            : Gpa40Scale();
     for (final c in semesters[i]) {
       if (c.isPassFail || c.credits <= 0) continue;
       double points = scale.gradeToPoints(c.grade);
@@ -47,6 +56,7 @@ double calculateCumulative(List<List<CourseInput>> semesters, List<GradingScale>
 }
 
 /// What-if: add hypothetical courses to existing list and recalculate.
-double whatIfGpa(List<CourseInput> existing, List<CourseInput> hypothetical, GradingScale scale) {
+double whatIfGpa(List<CourseInput> existing, List<CourseInput> hypothetical,
+    GradingScale scale) {
   return calculateGpa([...existing, ...hypothetical], scale);
 }

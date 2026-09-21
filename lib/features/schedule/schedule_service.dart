@@ -34,7 +34,8 @@ List<Conflict> detectConflicts(List<ScheduleSlot> slots) {
   for (var i = 0; i < slots.length; i++) {
     for (var j = i + 1; j < slots.length; j++) {
       if (slots[i].dayOfWeek != slots[j].dayOfWeek) continue;
-      if (isOverlapping(slots[i].startMinutes, slots[i].endMinutes, slots[j].startMinutes, slots[j].endMinutes)) {
+      if (isOverlapping(slots[i].startMinutes, slots[i].endMinutes,
+          slots[j].startMinutes, slots[j].endMinutes)) {
         conflicts.add(Conflict(slots[i], slots[j]));
       }
     }
@@ -48,8 +49,7 @@ ScheduleSlot? nextClass(List<ScheduleSlot> slots, DateTime now) {
   ScheduleSlot? best;
   int bestDistance = 1 << 30;
   for (final s in slots) {
-    final distance =
-        nextOccurrence(s, now).difference(now).inMinutes;
+    final distance = nextOccurrence(s, now).difference(now).inMinutes;
     if (distance < bestDistance) {
       bestDistance = distance;
       best = s;

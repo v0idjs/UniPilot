@@ -34,7 +34,8 @@ void main() {
   });
   test('fromJson truncates oversized strings', () {
     final long = 'B' * 300;
-    final r = CampusRoom.fromJson({'id': '9', 'building': long, 'room': 'R101'});
+    final r =
+        CampusRoom.fromJson({'id': '9', 'building': long, 'room': 'R101'});
     expect(r.building.length, lessThanOrEqualTo(201));
     expect(r.building.length, 201);
     expect(r.building.endsWith('…'), isTrue);

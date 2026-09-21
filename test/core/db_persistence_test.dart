@@ -133,8 +133,10 @@ void main() {
     final db = _memoryDb();
     addTearDown(db.close);
 
-    expect(() => db.createCourse(code: '', name: 'Intro'), throwsA(isA<ArgumentError>()));
-    expect(() => db.createCourse(code: 'CS101', name: ''), throwsA(isA<ArgumentError>()));
+    expect(() => db.createCourse(code: '', name: 'Intro'),
+        throwsA(isA<ArgumentError>()));
+    expect(() => db.createCourse(code: 'CS101', name: ''),
+        throwsA(isA<ArgumentError>()));
   });
 
   test('createGrade rejects zero credits', () async {

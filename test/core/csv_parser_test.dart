@@ -24,7 +24,8 @@ void main() {
   });
 
   test('reports invalid day and time', () {
-    const csv = 'code,name,day,start,end\nCS101,X,FunDay,09:00,10:30\nCS102,Y,Mon,25:00,10:30';
+    const csv =
+        'code,name,day,start,end\nCS101,X,FunDay,09:00,10:30\nCS102,Y,Mon,25:00,10:30';
     final r = parser.parse(csv);
     expect(r.rows, isEmpty);
     expect(r.errors.length, 2);
@@ -49,7 +50,8 @@ void main() {
   });
 
   test('parses sample file content', () {
-    const csv = 'code,name,day,start,end,room\nCS101,Intro to CS,Mon,09:00,10:30,A101\nMA201,Calculus II,Tue,11:00,12:30,B203';
+    const csv =
+        'code,name,day,start,end,room\nCS101,Intro to CS,Mon,09:00,10:30,A101\nMA201,Calculus II,Tue,11:00,12:30,B203';
     final r = parser.parse(csv);
     expect(r.rows.length, 2);
     expect(r.rows[1].room, 'B203');

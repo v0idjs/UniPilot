@@ -45,13 +45,19 @@ class NotificationService implements ReminderScheduler {
   }
 
   /// Android 13+ runtime permission. No-op (true) elsewhere.
+  /// Never throws: an unregistered platform (e.g. unit tests) yields false.
   Future<bool> requestPermission() async {
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    if (android != null) {
-      return await android.requestNotificationsPermission() ?? false;
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android != null) {
+        return await android.requestNotificationsPermission() ?? false;
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Notification permission request failed: $e');
+      return false;
     }
-    return true;
   }
 
   @override

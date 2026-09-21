@@ -51,6 +51,49 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
   });
 
+  testWidgets('picking a date enables the optional time picker',
+      (tester) async {
+    final db = FakeUniPilotDatabase();
+    addTearDown(db.close);
+    final rs = RecordingReminderScheduler();
+
+    await tester.pumpWidget(_scope(db, rs));
+    await _pump(tester);
+
+    await tester.tap(find.text('Add Deadline'));
+    await _pump(tester);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Title'),
+      'Exam',
+    );
+
+    // No date yet: the time button explains itself and does nothing.
+    expect(find.text('Pick a date first'), findsOneWidget);
+
+    // The date picker opens with tomorrow pre-selected; confirming keeps it.
+    await tester.tap(find.text('Pick due date'));
+    await _pump(tester);
+    await tester.tap(find.text('OK'));
+    await _pump(tester);
+
+    // Default time is end-of-day; confirming the time picker keeps it.
+    expect(find.textContaining('Time: 23:59'), findsOneWidget);
+    await tester.tap(find.textContaining('Time: 23:59'));
+    await _pump(tester);
+    await tester.tap(find.text('OK'));
+    await _pump(tester);
+
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(rs.scheduled, hasLength(1));
+    expect(rs.scheduled.single.title, 'Exam');
+    expect(rs.scheduled.single.dueAt.hour, 23);
+    expect(rs.scheduled.single.dueAt.minute, 59);
+    await tester.pump(const Duration(seconds: 5));
+  });
+
   testWidgets('completing a deadline cancels its reminder', (tester) async {
     final db = FakeUniPilotDatabase();
     addTearDown(db.close);

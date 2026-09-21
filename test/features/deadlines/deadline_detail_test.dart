@@ -39,8 +39,7 @@ void main() {
     expect(find.textContaining('Completed'), findsOneWidget);
   });
 
-  testWidgets('tapping a deadline opens details with delete',
-      (tester) async {
+  testWidgets('tapping a deadline opens details with delete', (tester) async {
     final db = FakeUniPilotDatabase();
     addTearDown(db.close);
     await db.createAssignment(

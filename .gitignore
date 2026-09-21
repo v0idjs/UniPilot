@@ -3,6 +3,7 @@
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
+.metadata
 build/
 coverage/
 
@@ -42,6 +43,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+*.iml
+*.ipr
+*.iws
 *.swp
 *.tmp
 

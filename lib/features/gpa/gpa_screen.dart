@@ -279,16 +279,14 @@ class _GradeFormSheetState extends ConsumerState<_GradeFormSheet> {
                     );
                     return;
                   }
-                  final scale =
-                      scaleById(widget.semester.gradingScaleId);
+                  final scale = scaleById(widget.semester.gradingScaleId);
                   if (!scale.isValidGrade(_grade.text)) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Invalid grade')),
                     );
                     return;
                   }
-                  final credits =
-                      double.tryParse(_credits.text.trim()) ?? -1;
+                  final credits = double.tryParse(_credits.text.trim()) ?? -1;
                   if (credits <= 0 || credits > 100) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -350,7 +348,8 @@ class _AddSemesterSheetState extends ConsumerState<_AddSemesterSheet> {
   @override
   Widget build(BuildContext context) {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      const Text('Add Semester', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      const Text('Add Semester',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       const SizedBox(height: 12),
       TextField(
         controller: _name,
@@ -374,7 +373,9 @@ class _AddSemesterSheetState extends ConsumerState<_AddSemesterSheet> {
                 }
                 setState(() => _saving = true);
                 try {
-                  await ref.read(dbProvider).createSemester(name: _name.text.trim());
+                  await ref
+                      .read(dbProvider)
+                      .createSemester(name: _name.text.trim());
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Semester saved offline')),

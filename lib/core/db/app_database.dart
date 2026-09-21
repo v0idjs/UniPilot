@@ -20,7 +20,14 @@ LazyDatabase _openConnection() {
   });
 }
 
-@DriftDatabase(tables: [Courses, ScheduleEntries, Assignments, Semesters, CourseGrades, CampusRooms])
+@DriftDatabase(tables: [
+  Courses,
+  ScheduleEntries,
+  Assignments,
+  Semesters,
+  CourseGrades,
+  CampusRooms
+])
 class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -75,13 +82,12 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
   }
 
   @override
-  Stream<List<ScheduleEntry>> watchEntries() =>
-      (select(scheduleEntries)
-            ..orderBy([
-              (e) => OrderingTerm.asc(e.dayOfWeek),
-              (e) => OrderingTerm.asc(e.startMinutes),
-            ]))
-          .watch();
+  Stream<List<ScheduleEntry>> watchEntries() => (select(scheduleEntries)
+        ..orderBy([
+          (e) => OrderingTerm.asc(e.dayOfWeek),
+          (e) => OrderingTerm.asc(e.startMinutes),
+        ]))
+      .watch();
 
   @override
   Future<int> createEntry({
@@ -113,7 +119,8 @@ class AppDatabase extends _$AppDatabase implements UniPilotDatabase {
 
   @override
   Stream<List<Assignment>> watchAssignments() =>
-      (select(assignments)..orderBy([(a) => OrderingTerm.asc(a.dueAt)])).watch();
+      (select(assignments)..orderBy([(a) => OrderingTerm.asc(a.dueAt)]))
+          .watch();
 
   @override
   Future<String> createAssignment({

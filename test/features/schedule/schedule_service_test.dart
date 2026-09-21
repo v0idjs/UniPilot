@@ -30,7 +30,11 @@ void main() {
 
   test('nextClass finds same day future', () {
     // Monday 10:00, slots: Mon 09:00, Mon 11:00, Tue 09:00
-    final slots = [slot('1', 1, 540, 600), slot('2', 1, 660, 720), slot('3', 2, 540, 600)];
+    final slots = [
+      slot('1', 1, 540, 600),
+      slot('2', 1, 660, 720),
+      slot('3', 2, 540, 600)
+    ];
     final now = DateTime(2025, 9, 15, 10, 0); // 2025-09-15 is Mon
     final next = nextClass(slots, now);
     expect(next?.id, '2');
@@ -74,7 +78,9 @@ void main() {
         );
 
     test('skips orphan courseId', () {
-      final slots = toSlots([course('c-1')], [
+      final slots = toSlots([
+        course('c-1')
+      ], [
         entry('e-1', 'c-1'),
         entry('e-orphan', 'c-deleted'),
       ]);

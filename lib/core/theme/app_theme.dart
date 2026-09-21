@@ -105,8 +105,7 @@ ThemeData buildLightTheme() {
             ? AppColors.amberAccent
             : Colors.transparent,
       ),
-      todayForegroundColor:
-          WidgetStateProperty.all(AppColors.indigoPrimary),
+      todayForegroundColor: WidgetStateProperty.all(AppColors.indigoPrimary),
       todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
     ),
     timePickerTheme: const TimePickerThemeData(

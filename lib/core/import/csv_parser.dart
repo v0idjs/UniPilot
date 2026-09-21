@@ -48,13 +48,27 @@ class TimetableCsvParser {
   };
 
   static const _dayMap = {
-    'mon': 1, 'monday': 1, '1': 1,
-    'tue': 2, 'tuesday': 2, '2': 2,
-    'wed': 3, 'wednesday': 3, '3': 3,
-    'thu': 4, 'thursday': 4, '4': 4,
-    'fri': 5, 'friday': 5, '5': 5,
-    'sat': 6, 'saturday': 6, '6': 6,
-    'sun': 7, 'sunday': 7, '7': 7,
+    'mon': 1,
+    'monday': 1,
+    '1': 1,
+    'tue': 2,
+    'tuesday': 2,
+    '2': 2,
+    'wed': 3,
+    'wednesday': 3,
+    '3': 3,
+    'thu': 4,
+    'thursday': 4,
+    '4': 4,
+    'fri': 5,
+    'friday': 5,
+    '5': 5,
+    'sat': 6,
+    'saturday': 6,
+    '6': 6,
+    'sun': 7,
+    'sunday': 7,
+    '7': 7,
   };
 
   static const maxInputBytes = 512 * 1024;
@@ -67,10 +81,12 @@ class TimetableCsvParser {
       return const CsvParseResult(rows: [], errors: ['Empty CSV']);
     }
     if (csvText.length > maxInputBytes) {
-      return const CsvParseResult(rows: [], errors: ['File too large (max 512KB)']);
+      return const CsvParseResult(
+          rows: [], errors: ['File too large (max 512KB)']);
     }
     // Auto-detect delimiter: semicolon vs comma
-    final delimiter = csvText.contains(';') && !csvText.contains(',') ? ';' : ',';
+    final delimiter =
+        csvText.contains(';') && !csvText.contains(',') ? ';' : ',';
     // But if both present, count
     String effectiveDelimiter = delimiter;
     if (csvText.contains(';') && csvText.contains(',')) {
@@ -89,7 +105,8 @@ class TimetableCsvParser {
     } catch (e) {
       return CsvParseResult(rows: [], errors: ['CSV parse error: $e']);
     }
-    if (table.isEmpty) return const CsvParseResult(rows: [], errors: ['No rows found']);
+    if (table.isEmpty)
+      return const CsvParseResult(rows: [], errors: ['No rows found']);
     // Also handle if csv lib treated whole file as one row due to delimiter mismatch -> retry with other delimiter
     if (table.length >= 2 && table[0].length == 1) {
       final alt = effectiveDelimiter == ',' ? ';' : ',';
@@ -101,14 +118,20 @@ class TimetableCsvParser {
         }
       } catch (_) {}
     }
-    final header = table[0].map((e) => e.toString().trim().toLowerCase().replaceAll(' ', '_')).toList();
+    final header = table[0]
+        .map((e) => e.toString().trim().toLowerCase().replaceAll(' ', '_'))
+        .toList();
     final colIndex = <String, int>{};
     for (var i = 0; i < header.length; i++) {
       final normalized = _headerAliases[header[i]] ?? header[i];
       colIndex[normalized] = i;
     }
-    if (!colIndex.containsKey('code') || !colIndex.containsKey('day') || !colIndex.containsKey('start') || !colIndex.containsKey('end')) {
-      errors.add('Missing required columns. Need: code, day, start, end. Found: ${header.join(', ')}');
+    if (!colIndex.containsKey('code') ||
+        !colIndex.containsKey('day') ||
+        !colIndex.containsKey('start') ||
+        !colIndex.containsKey('end')) {
+      errors.add(
+          'Missing required columns. Need: code, day, start, end. Found: ${header.join(', ')}');
       return CsvParseResult(rows: [], errors: errors);
     }
     var lastRow = table.length;
@@ -125,6 +148,7 @@ class TimetableCsvParser {
           if (idx >= row.length) return '';
           return row[idx].toString().trim();
         }
+
         final code = getCol('code');
         final name = colIndex.containsKey('name') ? getCol('name') : code;
         final dayRaw = getCol('day').toLowerCase();

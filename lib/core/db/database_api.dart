@@ -25,6 +25,7 @@ abstract class UniPilotDatabase {
   Future<void> deleteEntry(String id);
 
   Stream<List<Assignment>> watchAssignments();
+
   /// Creates the assignment and returns its new id (needed to tie
   /// scheduled reminders to the row).
   Future<String> createAssignment({

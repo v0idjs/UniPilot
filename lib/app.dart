@@ -19,7 +19,8 @@ final _router = GoRouter(
       builder: (context, state, child) => AppScaffold(child: child),
       routes: [
         GoRoute(path: '/schedule', builder: (c, s) => const ScheduleScreen()),
-        GoRoute(path: '/deadlines', builder: (c, s) => const DeadlineListScreen()),
+        GoRoute(
+            path: '/deadlines', builder: (c, s) => const DeadlineListScreen()),
         GoRoute(path: '/gpa', builder: (c, s) => const GpaScreen()),
         GoRoute(path: '/campus', builder: (c, s) => const CampusScreen()),
       ],
@@ -60,8 +61,10 @@ class AppScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = GoRouterState.of(context).uri.toString();
     int index = 0;
-    if (loc.startsWith('/deadlines')) index = 1;
-    else if (loc.startsWith('/gpa')) index = 2;
+    if (loc.startsWith('/deadlines'))
+      index = 1;
+    else if (loc.startsWith('/gpa'))
+      index = 2;
     else if (loc.startsWith('/campus')) index = 3;
     void go(int i) => context.go(_tabs[i].$3);
     return LayoutBuilder(

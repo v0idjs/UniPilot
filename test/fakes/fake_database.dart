@@ -68,7 +68,8 @@ class FakeUniPilotDatabase implements UniPilotDatabase {
     final i = _courses.indexWhere((c) => c.id == id);
     if (i < 0) throw StateError('course $id not found');
     final old = _courses[i];
-    _courses[i] = old.copyWith(code: code, name: name, updatedAt: DateTime.now());
+    _courses[i] =
+        old.copyWith(code: code, name: name, updatedAt: DateTime.now());
     _coursesController.add(List<Course>.unmodifiable(_courses));
   }
 

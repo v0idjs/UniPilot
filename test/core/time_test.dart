@@ -10,10 +10,17 @@ void main() {
 
   test('formatCountdown future', () {
     final now = DateTime(2025, 9, 15, 10, 0);
-    expect(formatCountdown(now.add(const Duration(minutes: 30)), now: now), '30m left');
-    expect(formatCountdown(now.add(const Duration(hours: 2, minutes: 15)), now: now), '2h 15m left');
-    expect(formatCountdown(now.add(const Duration(days: 3, hours: 2)), now: now), '3d 2h left');
-    expect(formatCountdown(now.add(const Duration(days: 2)), now: now), '2d left');
+    expect(formatCountdown(now.add(const Duration(minutes: 30)), now: now),
+        '30m left');
+    expect(
+        formatCountdown(now.add(const Duration(hours: 2, minutes: 15)),
+            now: now),
+        '2h 15m left');
+    expect(
+        formatCountdown(now.add(const Duration(days: 3, hours: 2)), now: now),
+        '3d 2h left');
+    expect(
+        formatCountdown(now.add(const Duration(days: 2)), now: now), '2d left');
   });
 
   test('formatCountdown overdue', () {

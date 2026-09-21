@@ -77,8 +77,7 @@ class ScheduleScreen extends ConsumerWidget {
                 return EmptyState(
                   icon: Icons.event_note,
                   title: 'No courses yet',
-                  subtitle:
-                      'Add your first course to build your schedule',
+                  subtitle: 'Add your first course to build your schedule',
                   actionLabel: 'Add course',
                   onAction: () => _showCourseForm(context),
                 );
@@ -90,10 +89,8 @@ class ScheduleScreen extends ConsumerWidget {
                       child: ListTile(
                         leading: const Icon(Icons.book),
                         title: Text('${c.code} — ${c.name}'),
-                        subtitle:
-                            c.room == null ? null : Text(c.room!),
-                        trailing:
-                            const Icon(Icons.chevron_right),
+                        subtitle: c.room == null ? null : Text(c.room!),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showCourseDetail(context, c),
                       ),
                     ),
@@ -136,8 +133,7 @@ class ScheduleScreen extends ConsumerWidget {
                       for (final e in entries)
                         Card(
                           child: ListTile(
-                            leading:
-                                const Icon(Icons.calendar_view_week),
+                            leading: const Icon(Icons.calendar_view_week),
                             title: Text(
                               '${e.dayOfWeek >= 1 && e.dayOfWeek <= 7 ? _dayNames[e.dayOfWeek - 1] : 'Day ${e.dayOfWeek}'} '
                               '${formatMinutes(e.startMinutes)}–'
@@ -482,10 +478,8 @@ class _TimeSlotSheetState extends ConsumerState<_TimeSlotSheet> {
                   setState(() => _saving = true);
                   try {
                     final db = ref.read(dbProvider);
-                    final courses =
-                        ref.read(coursesProvider).value ?? [];
-                    final entries =
-                        ref.read(entriesProvider).value ?? [];
+                    final courses = ref.read(coursesProvider).value ?? [];
+                    final entries = ref.read(entriesProvider).value ?? [];
                     final slots = toSlots(courses, entries);
                     final candidate = ScheduleSlot(
                       id: 'new',

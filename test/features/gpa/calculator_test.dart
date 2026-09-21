@@ -60,15 +60,40 @@ void main() {
       expect(s.gradeToPoints('82'), 3.3);
       expect(s.isValidGrade('105'), false);
     });
+    test('percentage scale boundaries', () {
+      final s = PercentageScale();
+      expect(s.gradeToPoints('90'), 4.0);
+      expect(s.gradeToPoints('85'), 3.7);
+      expect(s.gradeToPoints('80'), 3.3);
+      expect(s.gradeToPoints('75'), 3.0);
+      expect(s.gradeToPoints('70'), 2.7);
+      expect(s.gradeToPoints('65'), 2.3);
+      expect(s.gradeToPoints('60'), 2.0);
+      expect(s.gradeToPoints('55'), 1.7);
+      expect(s.gradeToPoints('50'), 1.0);
+      expect(s.gradeToPoints('49'), 0.0);
+      expect(s.gradeToPoints('95%'), 4.0);
+      expect(s.isValidGrade('0'), true);
+      expect(s.isValidGrade('-1'), false);
+      expect(s.isValidGrade('abc'), false);
+      expect(() => s.gradeToPoints('abc'), throwsArgumentError);
+      expect(() => s.gradeToPoints('101'), throwsArgumentError);
+    });
     test('custom scale', () {
-      final s = CustomScale(id: 'custom_test', displayName: 'Test', mapping: {'A': 4.0, 'B': 3.0});
+      final s = CustomScale(
+          id: 'custom_test',
+          displayName: 'Test',
+          mapping: {'A': 4.0, 'B': 3.0});
       expect(s.gradeToPoints('A'), 4.0);
       expect(s.isValidGrade('C'), false);
     });
   });
 
   test('cumulative GPA', () {
-    final s1 = [CourseInput(grade: 'A', credits: 3), CourseInput(grade: 'B', credits: 3)];
+    final s1 = [
+      CourseInput(grade: 'A', credits: 3),
+      CourseInput(grade: 'B', credits: 3)
+    ];
     final s2 = [CourseInput(grade: 'C', credits: 3)];
     final result = calculateCumulative([s1, s2], [Gpa40Scale(), Gpa40Scale()]);
     // (4*3 +3*3 +2*3)/9 =3.0
