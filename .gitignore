@@ -12,14 +12,14 @@ coverage/
 *.drift.dart
 *.freezed.dart
 
-# Platform build outputs
-android/.gradle/
-android/app/build/
-ios/Pods/
-ios/.symlinks/
-windows/flutter/generated_*
-linux/flutter/generated_*
-macos/Flutter/GeneratedPluginRegistrant.swift
+# Platform trees are scaffolded in CI (flutter create) and contain
+# machine-specific paths (SDK locations, local.properties, ephemeral
+# build files) — never commit them.
+# (e.g. ios/Flutter/ephemeral/flutter_native_integration.env)
+/android/
+/ios/
+/windows/
+pubspec.lock
 
 # Signing secrets (never commit — see docs/release.md)
 *.jks

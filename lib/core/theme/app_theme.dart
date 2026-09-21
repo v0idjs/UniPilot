@@ -30,7 +30,7 @@ ThemeData buildLightTheme() {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surfaceLight,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -76,7 +76,7 @@ ThemeData buildLightTheme() {
       ),
       indicatorColor: AppColors.amberAccent,
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: AppColors.surfaceLight,
       surfaceTintColor: Colors.transparent,
@@ -154,7 +154,7 @@ ThemeData buildDarkTheme() {
       backgroundColor: AppColors.amberAccent,
       foregroundColor: AppColors.indigoPrimary,
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surfaceDark,
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -196,7 +196,7 @@ ThemeData buildDarkTheme() {
       ),
       indicatorColor: AppColors.indigoLight,
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: AppColors.surfaceDark,
       surfaceTintColor: Colors.transparent,
