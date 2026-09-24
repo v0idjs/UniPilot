@@ -222,7 +222,7 @@ jobs:
         shell: bash
       - run: flutter test --coverage
         shell: bash
-      - run: flutter build windows --release -v
+      - run: flutter build windows --release
 
       - name: Zip Windows build
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath unipilot-windows.zip
@@ -297,7 +297,7 @@ jobs:
             - `unipilot-windows.zip` (standalone Windows release)
 
           #### Tech Stack
-          - Flutter 3.27.4 · Drift · Riverpod · go_router · flutter_local_notifications
+          - Flutter 3.47.5 · Drift · Riverpod · go_router · flutter_local_notifications
           EOF
           cat /tmp/release_body.md
         shell: bash

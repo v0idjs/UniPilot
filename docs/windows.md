@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Flutter SDK 3.27.x on `PATH` (`flutter --version`)
+- Flutter SDK 3.47.x on `PATH` (`flutter --version`)
 - Visual Studio 2022 with the Desktop C++ workload
 - `flutter config --enable-windows-desktop`
 
@@ -41,10 +41,10 @@ If the window opens but stays blank:
 
 Deadline reminders do not fire on Windows yet. The plugin version with
 Windows toast support crashes this project's AOT compiler (verified on
-Flutter 3.24 and 3.27), so notifications stay Android-only until the
-toolchain catches up — tracked as a follow-up issue. Saving, completing,
-and deleting deadlines all work normally on Windows; only the toast is
-missing.
+Flutter 3.24, 3.27, and 3.47 — `NativeLaunchDetails`, illegal cid), so
+notifications stay Android-only until the toolchain catches up — tracked
+as a follow-up issue. Saving, completing, and deleting deadlines all
+work normally on Windows; only the toast is missing.
 
 ## Icons
 

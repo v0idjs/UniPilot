@@ -4,6 +4,26 @@ All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
 
+## v0.6.0 — 2026-09-21
+### Added
+- `tool/coverage_gate.dart`: CI-enforced 80% line-coverage gate (generated code excluded)
+- Notification service unit tests, percentage-scale boundary tests, deadline time-picker flow test, 200% text-scaling smoke tests
+- Shared scheduler fakes (`test/fakes/fake_reminder_scheduler.dart`) required in all deadline widget tests
+
+### Changed
+- Flutter pinned 3.27.4 → 3.47.5 across CI, release workflows, and docs
+- Riverpod 2.x → 3.x (`misc.dart` Override import, `AsyncValue.value`), go_router 14 → 18, drift 2.23 → 2.35 with sqlite3 3.x (dropped end-of-lifed `sqlite3_flutter_libs`), csv 6 → 8 (new `Csv` API), intl/timezone/window_manager/lints to latest
+- CI quality gates: format check fails, analyzer warnings fail, coverage below 80% fails
+- Deadline reminders stay Android-only: plugin 19+/22.x Windows FFI bindings crash the AOT compiler on Flutter 3.24 through 3.47 (tracked for a future toolchain)
+
+### Fixed
+- CSV times like `09.30` coerced to double by the parser (kept as strings now)
+- Windows toast init params, sync-throw test expectations
+
+### Removed
+- Unused `cupertino_icons` and no-op `custom_lint` setup; `ios/` stub (Android + Windows only)
+- Local-only scaffolding never shipped: screenshot helpers, machine platform trees (now gitignored)
+
 ## v0.5.2 — 2026-09-19
 ### Fixed
 - Windows release build: reverted `flutter_local_notifications` 19.x → 17.x — the 19.x Windows FFI bindings crash the AOT compiler (`NativeLaunchDetails`, illegal cid), breaking `flutter build windows` on Flutter 3.24 and 3.27. Reminders are Android-only until the toolchain catches up (follow-up issue filed)

@@ -13,7 +13,7 @@ both to the GitHub Release.
 
 - `.github/workflows/ci.yml` — analyze + test on push/PR to main.
 - `.github/workflows/release.yml` — `Release UniPilot`: Android APK
-  (ubuntu-latest, Flutter 3.27.4) + Windows app (windows-2022) +
+  (ubuntu-latest, Flutter 3.47.5) + Windows app (windows-2022) +
   published GitHub Release with per-version notes from `CHANGELOG.md`.
 
 ## Signing (updates must keep one signature line)
