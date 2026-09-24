@@ -27,7 +27,9 @@ jobs:
         run: |
           # Scaffold both runners: the icon step generates android and
           # windows outputs and fails when either tree is missing.
-          if [ ! -f android/settings.gradle ] || [ ! -f windows/CMakeLists.txt ]; then
+          # Flutter 3.47 scaffolds Kotlin DSL (settings.gradle.kts);
+          # older Flutter used Groovy (settings.gradle) — accept either.
+          if { [ ! -f android/settings.gradle ] && [ ! -f android/settings.gradle.kts ]; } || [ ! -f windows/CMakeLists.txt ]; then
             flutter create --platforms android,windows --project-name unipilot --org com.unipilot . || true
           fi
         shell: bash
@@ -66,8 +68,22 @@ jobs:
       - name: Patch Android for SDK 35, Build-Tools 35.0.0, and Kotlin 1.9.22
         run: |
           echo "=== BEFORE ==="
-          cat android/settings.gradle | head -30
-          cat android/app/build.gradle | head -40
+          cat android/settings.gradle 2>/dev/null | head -30 || true
+          cat android/settings.gradle.kts 2>/dev/null | head -30 || true
+          cat android/app/build.gradle 2>/dev/null | head -40 || true
+          cat android/app/build.gradle.kts 2>/dev/null | head -60 || true
+          if [ -f android/app/build.gradle.kts ]; then
+            echo "=== Kotlin DSL layout (Flutter 3.32+ template): skipping legacy version pins (template is already modern) ==="
+            # Enable core library desugaring for flutter_local_notifications
+            if ! grep -q "isCoreLibraryDesugaringEnabled\|coreLibraryDesugaring" android/app/build.gradle.kts; then
+              printf '\nandroid {\n    compileOptions {\n        isCoreLibraryDesugaringEnabled = true\n    }\n}\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n' >> android/app/build.gradle.kts
+              echo "=== Desugaring dependency added (Kotlin DSL) ==="
+            fi
+            grep -n "desugar\|compileSdk\|targetSdk" android/app/build.gradle.kts | head -20 || true
+            echo "=== AFTER (Kotlin DSL, version pins skipped) ==="
+            exit 0
+          fi
+          echo "=== Groovy layout: applying legacy pins ==="
           sed -i -E 's/org\.jetbrains\.kotlin\.android" version "[^"]+"/org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
           # Bump AGP from 7.3.0 to 8.5.0 for SDK 35 support
           sed -i -E 's/com\.android\.application" version "[^"]+"/com.android.application" version "8.5.0"/' android/settings.gradle || true
@@ -112,8 +128,8 @@ jobs:
             cat android/gradle/wrapper/gradle-wrapper.properties || true
           fi
           echo "=== AFTER ==="
-          cat android/app/build.gradle | head -50
-          grep -n "kotlin\|compileSdk\|buildToolsVersion\|targetSdk" android/settings.gradle android/build.gradle android/app/build.gradle || true
+          cat android/app/build.gradle 2>/dev/null | head -50 || true
+          grep -n "kotlin\|compileSdk\|buildToolsVersion\|targetSdk" android/settings.gradle android/build.gradle android/app/build.gradle android/settings.gradle.kts android/app/build.gradle.kts 2>/dev/null || true
         shell: bash
 
       - name: Configure persistent signing key

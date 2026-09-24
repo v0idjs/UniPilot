@@ -17,7 +17,7 @@ jobs:
           cache: true
       - name: Ensure platforms exist
         run: |
-          if [ ! -f android/build.gradle ] || [ ! -f windows/CMakeLists.txt ]; then
+          if { [ ! -f android/settings.gradle ] && [ ! -f android/settings.gradle.kts ]; } || [ ! -f windows/CMakeLists.txt ]; then
             flutter create --platforms android,windows --project-name unipilot --org com.unipilot . || true
           fi
         shell: bash
