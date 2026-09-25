@@ -226,6 +226,31 @@ jobs:
           }
         shell: pwsh
 
+      - name: Disable Impeller on Windows (use Skia)
+        run: |
+          # UniPilot #17: Impeller (default since Flutter 3.29) presents a
+          # blank white window on some Windows GPUs; v0.5.x shipped Skia
+          # and rendered fine. Force Skia via the supported runner API.
+          # Fails loudly if the template anchor moves, so we never
+          # silently ship the Impeller default again.
+          $target = "windows/runner/main.cpp"
+          $text = Get-Content $target -Raw
+          if ($text -notmatch 'set_impeller_switch') {
+            $anchor = 'project.set_dart_entrypoint_arguments(std::move(command_line_arguments));'
+            if ($text -notmatch [regex]::Escape($anchor)) {
+              Write-Output "ERROR: main.cpp anchor not found - template changed, refusing to ship Impeller default."
+              exit 1
+            }
+            $insert = $anchor + "`r`n`r`n  // UniPilot #17: force Skia; Impeller blanks some Windows GPUs." + "`r`n  project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);"
+            $patched = $text -replace [regex]::Escape($anchor), $insert
+            Set-Content $target $patched -NoNewline
+            Write-Output "Impeller disabled (Skia forced) in Windows runner."
+          } else {
+            Write-Output "Impeller switch already present."
+          }
+          Select-String -Path $target -Pattern 'set_impeller_switch'
+        shell: pwsh
+
       - run: flutter pub get
       - name: Generate launcher icons
         run: |

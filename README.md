@@ -9,7 +9,11 @@
 
 Offline-first Flutter app for students: class schedule, deadline tracking, GPA calculation, and campus room finder. No backend, no network, no accounts — your data stays in local SQLite on your device.
 
-<!-- screenshot: no screenshots checked in yet. To add one, run the app and capture with `flutter screenshot`, then save under `docs/images/` and reference it here. -->
+<!-- screenshots: see docs/images/README-shots.md for the capture runbook.
+     (`flutter screenshot` does not support Windows desktop.) -->
+| ![Schedule](docs/images/schedule.png) | ![Deadlines](docs/images/deadlines.png) |
+|---|---|
+| Schedule with courses and next-class card | Deadline list with reminders |
 
 ## Features
 

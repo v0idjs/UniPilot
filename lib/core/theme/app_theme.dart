@@ -20,7 +20,8 @@ ThemeData buildLightTheme() {
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: AppColors.amberAccent,
-      foregroundColor: Colors.white,
+      // Indigo on amber (~7.5:1); white on amber is ~2.1:1 and fails WCAG.
+      foregroundColor: AppColors.indigoPrimary,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -95,11 +96,9 @@ ThemeData buildLightTheme() {
       surfaceTintColor: Colors.transparent,
       headerBackgroundColor: AppColors.indigoPrimary,
       headerForegroundColor: Colors.white,
-      dayForegroundColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected)
-            ? Colors.white
-            : AppColors.indigoPrimary,
-      ),
+      // Indigo everywhere for contrast: white on the amber selection
+      // circle is ~2.1:1 and fails WCAG.
+      dayForegroundColor: WidgetStateProperty.all(AppColors.indigoPrimary),
       dayBackgroundColor: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.selected)
             ? AppColors.amberAccent
