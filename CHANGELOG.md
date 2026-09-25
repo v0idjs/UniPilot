@@ -3,6 +3,8 @@
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
+### Changed
+- Reverted the v0.6.2 Skia-force on Windows: it did not fix #17 (both GPU backends present blank on pre-D3D11 hardware), so the upstream Impeller default is restored rather than shipping a purposeless override. See `docs/windows-legacy-gpu.md`
 
 ## v0.6.2 — 2026-09-25
 ### Fixed

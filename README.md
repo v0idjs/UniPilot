@@ -27,6 +27,7 @@ Offline-first Flutter app for students: class schedule, deadline tracking, GPA c
 - [Flutter 3.47.5](https://docs.flutter.dev/release/archive) (pinned in CI)
 - [Git](https://git-scm.com/)
 - Android Studio or Android SDK for Android builds; Visual Studio C++ toolchain for Windows builds
+- Windows: a GPU/driver with working Direct3D 11 presentation (WDDM 1.2+). Pre-D3D11 integrated graphics on inbox drivers (e.g. Intel GMA / 4-Series) paint a blank window — see `docs/windows-legacy-gpu.md` for why and the workarounds
 
 ## Clone, Install, Run
 
