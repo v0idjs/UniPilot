@@ -66,10 +66,14 @@ past 64KB, and logging itself never throws.
 
 Deadline reminders do not fire on Windows yet. The plugin version with
 Windows toast support crashes this project's AOT compiler (verified on
-Flutter 3.24, 3.27, and 3.47 — `NativeLaunchDetails`, illegal cid), so
-notifications stay Android-only until the toolchain catches up — tracked
-as a follow-up issue. Saving, completing, and deleting deadlines all
-work normally on Windows; only the toast is missing.
+Flutter 3.24, 3.27, and 3.47 — `NativeLaunchDetails`, illegal cid),
+so notifications stay Android-only until the toolchain catches up —
+tracked as a follow-up issue. A retry against plugin 22.x on Flutter
+3.47.5 reproduced the exact crash (`AOT snapshotter exited with code
+-1073740791` on the Windows FFI bindings), so the project stays on
+plugin 17.x, which has no Windows implementation and therefore never
+imports the failing bindings. Saving, completing, and deleting
+deadlines all work normally on Windows; only the toast is missing.
 
 ## Icons
 

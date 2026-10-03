@@ -68,7 +68,7 @@ lib/features/campus/                 # campus finder UI + logic
 lib/core/db/                         # Drift/SQLite source of truth + validation
 lib/core/import/                     # CSV/ICS parsers (caps: 512KB, 2000 CSV rows,
                                      # 1000 ICS events, 52 recurrences)
-lib/core/notifications/              # NotificationService (exists, no callers yet)
+lib/core/notifications/              # ReminderScheduler interface + NotificationService (Android toasts; wired into deadline create/edit/complete/delete)
 lib/core/theme/                      # brand theme (indigo #1E1B4B, amber #F4A300)
 lib/core/utils/                      # shared helpers
 lib/widgets/                         # reusable widgets (e.g. NextClassCard)
