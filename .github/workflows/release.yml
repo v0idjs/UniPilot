@@ -226,6 +226,53 @@ jobs:
           }
         shell: pwsh
 
+      - name: Patch Windows runner for renderer fallback
+        run: |
+          # UniPilot #17: opt-in Skia fallback for GPUs/drivers where the
+          # Impeller presentation path shows a blank window. Default stays
+          # Impeller; UNIPILOT_RENDERER=software, a --software flag, or an
+          # RDP session selects Skia. Fail loudly if the template anchor
+          # moves so we never ship a silently unpatched runner.
+          $target = Join-Path "windows/runner" "main.cpp"
+          $anchor = 'project.set_dart_entrypoint_arguments(std::move(command_line_arguments));'
+          $text = Get-Content $target -Raw
+          if ($text -notmatch [regex]::Escape($anchor)) {
+            Write-Error "main.cpp anchor moved - renderer fallback not applied."
+            exit 1
+          }
+          if ($text -notmatch 'UNIPILOT_RENDERER') {
+            $fallback = @'
+            // UniPilot renderer fallback (issue #17): honor UNIPILOT_RENDERER=software
+            // or a --software flag, and auto-fallback on RDP sessions where the GPU
+            // presentation path is unreliable. Falls back to Skia; the default stays
+            // Impeller for everyone else. NOTE: this changes the renderer backend,
+            // not full software rasterization — this SDK's embedder API exposes no
+            // generic engine-switches knob, so --enable-software-rendering cannot be
+            // passed through. See docs/windows-legacy-gpu.md.
+            {
+              const std::wstring args(command_line != nullptr ? command_line : L"");
+              bool software = args.find(L"--software") != std::wstring::npos;
+              wchar_t renderer_env[32] = {};
+              if (::GetEnvironmentVariableW(L"UNIPILOT_RENDERER", renderer_env, 32) >
+                  0) {
+                software = software || (std::wstring(renderer_env) == L"software");
+              }
+              if (!software && ::GetSystemMetrics(SM_REMOTESESSION) != 0) {
+                software = true;
+              }
+              if (software) {
+                project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);
+              }
+            }
+'@
+            $text = $text -replace [regex]::Escape($anchor), ($anchor + "`r`n" + $fallback)
+            Set-Content $target $text -NoNewline
+            Write-Output "Renderer fallback patched into main.cpp."
+          } else {
+            Write-Output "Renderer fallback already present."
+          }
+        shell: pwsh
+
       - run: flutter pub get
       - name: Generate launcher icons
         run: |
@@ -239,6 +286,17 @@ jobs:
       - run: flutter test --coverage
         shell: bash
       - run: flutter build windows --release
+
+      - name: Add safe-mode launcher
+        run: |
+          # UniPilot #17: one-click fallback for blank-window machines.
+          # Sets UNIPILOT_RENDERER=software (see the runner patch above),
+          # then launches the app from its own folder. No machine-specific
+          # paths: %~dp0 always resolves to the unzipped folder.
+          $bat = "@echo off`r`nset UNIPILOT_RENDERER=software`r`nstart `"`" `"%~dp0unipilot.exe`" %*`r`n"
+          Set-Content -Path "build\windows\x64\runner\Release\unipilot-safe-mode.bat" -Value $bat -NoNewline -Encoding Ascii
+          Get-Content -Path "build\windows\x64\runner\Release\unipilot-safe-mode.bat"
+        shell: pwsh
 
       - name: Zip Windows build
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath unipilot-windows.zip

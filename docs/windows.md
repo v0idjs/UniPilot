@@ -37,6 +37,31 @@ If the window opens but stays blank:
 4. Run `flutter clean` followed by `flutter pub get` when switching
    toolchains or after generated-code changes.
 
+## Safe mode (renderer fallback)
+
+If the window opens but stays white — typically on old GPUs/drivers,
+RDP sessions, or VMs where the Impeller presentation path fails:
+
+1. Close the app, then double-click **`unipilot-safe-mode.bat`** next to
+   `unipilot.exe` (shipped in `unipilot-windows.zip`). It sets
+   `UNIPILOT_RENDERER=software` and launches the app, which then uses
+   the Skia backend instead of Impeller. The default stays Impeller
+   for everyone else.
+2. Equivalents: run `unipilot.exe --software`, or set the
+   `UNIPILOT_RENDERER=software` environment variable before launching.
+   RDP sessions fall back automatically.
+3. Pre-D3D11 hardware (e.g. Intel GMA / 4-Series on inbox drivers)
+   cannot present on any backend — safe mode will not help there.
+   See `docs/windows-legacy-gpu.md` for the full analysis.
+
+## Startup error log
+
+Unexpected failures during launch are appended to
+`unipilot-error.log` in the app documents directory — the same folder
+that holds `unipilot_db.sqlite` (see the checklist above). Attach it
+when reporting a startup issue. The log rotates instead of growing
+past 64KB, and logging itself never throws.
+
 ## Notifications on Windows
 
 Deadline reminders do not fire on Windows yet. The plugin version with
