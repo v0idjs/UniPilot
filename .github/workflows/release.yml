@@ -241,32 +241,40 @@ jobs:
             exit 1
           }
           if ($text -notmatch 'UNIPILOT_RENDERER') {
-            $fallback = @'
-            // UniPilot renderer fallback (issue #17): honor UNIPILOT_RENDERER=software
-            // or a --software flag, and auto-fallback on RDP sessions where the GPU
-            // presentation path is unreliable. Falls back to Skia; the default stays
-            // Impeller for everyone else. NOTE: this changes the renderer backend,
-            // not full software rasterization — this SDK's embedder API exposes no
-            // generic engine-switches knob, so --enable-software-rendering cannot be
-            // passed through. See docs/windows-legacy-gpu.md.
-            {
-              const std::wstring args(command_line != nullptr ? command_line : L"");
-              bool software = args.find(L"--software") != std::wstring::npos;
-              wchar_t renderer_env[32] = {};
-              if (::GetEnvironmentVariableW(L"UNIPILOT_RENDERER", renderer_env, 32) >
-                  0) {
-                software = software || (std::wstring(renderer_env) == L"software");
-              }
-              if (!software && ::GetSystemMetrics(SM_REMOTESESSION) != 0) {
-                software = true;
-              }
-              if (software) {
-                project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);
-              }
-            }
-'@
+            # No here-strings: their terminator must sit at column 0,
+            # which would end the YAML block scalar and break parsing.
+            $fallbackLines = @(
+              '// UniPilot renderer fallback (issue #17): honor UNIPILOT_RENDERER=software',
+              '// or a --software flag, and auto-fallback on RDP sessions where the GPU',
+              '// presentation path is unreliable. Falls back to Skia; the default stays',
+              '// Impeller for everyone else. NOTE: this changes the renderer backend,',
+              '// not full software rasterization — this SDK''s embedder API exposes no',
+              '// generic engine-switches knob, so --enable-software-rendering cannot be',
+              '// passed through. See docs/windows-legacy-gpu.md.',
+              '{',
+              '  const std::wstring args(command_line != nullptr ? command_line : L"");',
+              '  bool software = args.find(L"--software") != std::wstring::npos;',
+              '  wchar_t renderer_env[32] = {};',
+              '  if (::GetEnvironmentVariableW(L"UNIPILOT_RENDERER", renderer_env, 32) >',
+              '      0) {',
+              '    software = software || (std::wstring(renderer_env) == L"software");',
+              '  }',
+              '  if (!software && ::GetSystemMetrics(SM_REMOTESESSION) != 0) {',
+              '    software = true;',
+              '  }',
+              '  if (software) {',
+              '    project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);',
+              '  }',
+              '}'
+            )
+            $fallback = ($fallbackLines -join "`r`n")
             $text = $text -replace [regex]::Escape($anchor), ($anchor + "`r`n" + $fallback)
             Set-Content $target $text -NoNewline
+            $check = Get-Content $target -Raw
+            if ($check -notmatch 'set_impeller_switch\(flutter::ImpellerSwitch::Disabled\)') {
+              Write-Error "patch write did not take - marker absent after write."
+              exit 1
+            }
             Write-Output "Renderer fallback patched into main.cpp."
           } else {
             Write-Output "Renderer fallback already present."
@@ -300,6 +308,31 @@ jobs:
 
       - name: Zip Windows build
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath unipilot-windows.zip
+        shell: pwsh
+
+      - name: Verify Windows artifact
+        run: |
+          # UniPilot #17: the zip must ship the safe-mode launcher, and the
+          # runner source must carry the patched marker. Fail loudly here
+          # rather than publishing a release without the fallback.
+          $src = Get-Content windows/runner/main.cpp -Raw
+          if ($src -notmatch 'set_impeller_switch\(flutter::ImpellerSwitch::Disabled\)') {
+            Write-Error "patched runner marker absent in windows/runner/main.cpp."
+            exit 1
+          }
+          Expand-Archive -Path unipilot-windows.zip -DestinationPath zipcheck -Force
+          foreach ($f in @('unipilot.exe', 'unipilot-safe-mode.bat')) {
+            if (!(Test-Path (Join-Path 'zipcheck' $f))) {
+              Write-Error "missing $f in unipilot-windows.zip."
+              exit 1
+            }
+          }
+          $bat = Get-Content zipcheck/unipilot-safe-mode.bat -Raw
+          if ($bat -notmatch 'UNIPILOT_RENDERER=software') {
+            Write-Error "safe-mode launcher does not set UNIPILOT_RENDERER."
+            exit 1
+          }
+          Write-Output "Windows artifact verification passed."
         shell: pwsh
 
       - uses: actions/upload-artifact@v4

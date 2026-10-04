@@ -47,10 +47,15 @@ RDP sessions, or VMs where the Impeller presentation path fails:
    `UNIPILOT_RENDERER=software` and launches the app, which then uses
    the Skia backend instead of Impeller. The default stays Impeller
    for everyone else.
-2. Equivalents: run `unipilot.exe --software`, or set the
+2. Equivalents: run `unipilot.exe --software` (the runner's own
+   flag — not to be confused with the engine flag below), or set the
    `UNIPILOT_RENDERER=software` environment variable before launching.
    RDP sessions fall back automatically.
-3. Pre-D3D11 hardware (e.g. Intel GMA / 4-Series on inbox drivers)
+3. Do NOT run `unipilot.exe --enable-software-rendering`: on Flutter
+   3.47 raw engine flags never reach the engine (the runner forwards
+   CLI args to Dart), so that flag is silently ignored. Use the
+   `.bat`, the env var, or the runner's `--software` flag instead.
+4. Pre-D3D11 hardware (e.g. Intel GMA / 4-Series on inbox drivers)
    cannot present on any backend — safe mode will not help there.
    See `docs/windows-legacy-gpu.md` for the full analysis.
 

@@ -47,6 +47,19 @@ Launcher icons derive from `assets/logo.svg` via the 1024 master at
 workflow regenerates platform icons and fails the build if the
 expected outputs are missing.
 
+## Dry-run without publishing
+
+`Release UniPilot` also has a `workflow_dispatch` trigger. A manual
+run builds the APK and the Windows zip, runs the artifact assertions
+(safe-mode launcher present, runner patch marker present), and uploads
+both as workflow artifacts - the `Publish GitHub Release` job only runs
+on `v*` tags, so no release is created. Use it to validate workflow
+changes before tagging:
+
+```bash
+gh workflow run "Release UniPilot" --ref <branch>
+```
+
 ## Local Build
 
 ```
