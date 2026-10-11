@@ -9,11 +9,19 @@
 
 Offline-first Flutter app for students: class schedule, deadline tracking, GPA calculation, and campus room finder. No backend, no network, no accounts — your data stays in local SQLite on your device.
 
-<!-- screenshots: see docs/images/README-shots.md for the capture runbook.
-     (`flutter screenshot` does not support Windows desktop.) -->
-| ![Schedule](docs/images/schedule.png) | ![Deadlines](docs/images/deadlines.png) |
+## Screenshots
+
+> Placeholders — captures are taken on real hardware and checked in at
+> these paths (see `docs/images/README-shots.md` for the runbook;
+> `flutter screenshot` does not support Windows desktop).
+
+| ![Schedule](docs/screenshots/schedule.png) | ![Deadlines](docs/screenshots/deadlines.png) |
 |---|---|
 | Schedule with courses and next-class card | Deadline list with reminders |
+
+| ![GPA](docs/screenshots/gpa.png) | ![Campus](docs/screenshots/campus.png) |
+|---|---|
+| GPA calculator with what-if planning | Offline campus room finder |
 
 ## Features
 
@@ -22,11 +30,21 @@ Offline-first Flutter app for students: class schedule, deadline tracking, GPA c
 - **GPA Calculator** — per-semester and cumulative GPA across 4.0 / 4.3 / 5.0 / percentage / custom scales; honors +0.5 capped at the scale max; invalid grades are skipped with a count; what-if planning.
 - **Campus Finder** — searchable offline room list (local JSON + static map stub). Search input is trimmed automatically.
 
+## Download
+
+Grab the latest release for your platform — no accounts, no setup beyond installing:
+
+- **Android**: [`unipilot-android.apk`](https://github.com/v0idjs/UniPilot/releases/latest) — sideload the APK on your device (enable “Install unknown apps” for your browser when prompted). Deadline reminders fire as system notifications.
+- **Windows**: [`unipilot-windows.zip`](https://github.com/v0idjs/UniPilot/releases/latest) — unzip anywhere and run `unipilot.exe`. No installer, no admin rights. If the window opens blank on old GPUs/drivers, run `unipilot-safe-mode.bat` from the same folder instead (see [Windows guide](docs/windows.md)).
+
+Full release history: [GitHub Releases](https://github.com/v0idjs/UniPilot/releases).
+
 ## Prerequisites
 
 - [Flutter 3.47.5](https://docs.flutter.dev/release/archive) (pinned in CI)
 - [Git](https://git-scm.com/)
 - Android Studio or Android SDK for Android builds; Visual Studio C++ toolchain for Windows builds
+- Windows: a GPU/driver with working Direct3D 11 presentation (WDDM 1.2+). Pre-D3D11 integrated graphics on inbox drivers (e.g. Intel GMA / 4-Series) paint a blank window — see `docs/windows-legacy-gpu.md` for why and the workarounds
 
 ## Clone, Install, Run
 
@@ -67,7 +85,7 @@ lib/features/campus/                 # campus finder UI + logic
 lib/core/db/                         # Drift/SQLite source of truth + validation
 lib/core/import/                     # CSV/ICS parsers (caps: 512KB, 2000 CSV rows,
                                      # 1000 ICS events, 52 recurrences)
-lib/core/notifications/              # NotificationService (exists, no callers yet)
+lib/core/notifications/              # ReminderScheduler interface + NotificationService (Android toasts; wired into deadline create/edit/complete/delete)
 lib/core/theme/                      # brand theme (indigo #1E1B4B, amber #F4A300)
 lib/core/utils/                      # shared helpers
 lib/widgets/                         # reusable widgets (e.g. NextClassCard)
@@ -112,6 +130,7 @@ MIT — see [LICENSE](LICENSE).
 - [FAQ](docs/faq.md) — offline model, build_runner, fake DB, releases
 - [Import format](docs/import-format.md) — CSV/ICS columns and limits
 - [Release guide](docs/release.md) — tagging, signing, publishing
+- [Repo settings](docs/REPO_SETTINGS.md) — description/topics values for the GitHub UI or API (maintainers)
 - [Windows guide](docs/windows.md) — setup and troubleshooting
 - [Security policy](SECURITY.md) — SQLite is unencrypted (accepted risk)
 - [Changelog](CHANGELOG.md) — release history

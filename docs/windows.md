@@ -37,14 +37,54 @@ If the window opens but stays blank:
 4. Run `flutter clean` followed by `flutter pub get` when switching
    toolchains or after generated-code changes.
 
+## Safe mode (renderer fallback)
+
+If the window opens but stays white — typically on old GPUs/drivers,
+RDP sessions, or VMs where the Impeller presentation path fails:
+
+1. **Check the hardware first.** On pre-D3D11 graphics (e.g. Intel
+   GMA / 4-Series on inbox drivers) safe mode will NOT help: both
+   backends present through the same Direct3D path, so switching to
+   Skia changes nothing there. Go straight to the workarounds in
+   `docs/windows-legacy-gpu.md` — Force WARP for `unipilot.exe`, or
+   the Android build.
+2. Otherwise, close the app and double-click
+   **`unipilot-safe-mode.bat`** next to `unipilot.exe` (shipped in
+   `unipilot-windows.zip`). It sets `UNIPILOT_RENDERER=software` and
+   launches the app, which then uses the Skia backend instead of
+   Impeller. The default stays Impeller for everyone else.
+3. Equivalents: run `unipilot.exe --software` (the runner's own
+   flag — not to be confused with the engine flag below), or set the
+   `UNIPILOT_RENDERER=software` environment variable before launching.
+   RDP sessions fall back automatically.
+4. Do NOT run `unipilot.exe --enable-software-rendering`: on Flutter
+   3.47 raw engine flags never reach the engine (the runner forwards
+   CLI args to Dart), so that flag is silently ignored. Use the
+   `.bat`, the env var, or the runner's `--software` flag instead.
+
+## Startup error log
+
+Unexpected failures during launch are appended to
+`unipilot-error.log` in the app documents directory — the same folder
+that holds `unipilot_db.sqlite` (see the checklist above). Attach it
+when reporting a startup issue. The log rotates instead of growing
+past 64KB, and logging itself never throws. Only failures before
+first paint show the fallback UI; later async failures are logged
+while the already-visible app keeps running — so a white window with
+no log entry points at the presentation layer, not a Dart exception.
+
 ## Notifications on Windows
 
 Deadline reminders do not fire on Windows yet. The plugin version with
 Windows toast support crashes this project's AOT compiler (verified on
-Flutter 3.24, 3.27, and 3.47 — `NativeLaunchDetails`, illegal cid), so
-notifications stay Android-only until the toolchain catches up — tracked
-as a follow-up issue. Saving, completing, and deleting deadlines all
-work normally on Windows; only the toast is missing.
+Flutter 3.24, 3.27, and 3.47 — `NativeLaunchDetails`, illegal cid),
+so notifications stay Android-only until the toolchain catches up —
+tracked as a follow-up issue. A retry against plugin 22.x on Flutter
+3.47.5 reproduced the exact crash (`AOT snapshotter exited with code
+-1073740791` on the Windows FFI bindings), so the project stays on
+plugin 17.x, which has no Windows implementation and therefore never
+imports the failing bindings. Saving, completing, and deleting
+deadlines all work normally on Windows; only the toast is missing.
 
 ## Icons
 

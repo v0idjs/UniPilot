@@ -226,29 +226,77 @@ jobs:
           }
         shell: pwsh
 
-      - name: Disable Impeller on Windows (use Skia)
+      - name: Patch Windows runner for renderer fallback
         run: |
-          # UniPilot #17: Impeller (default since Flutter 3.29) presents a
-          # blank white window on some Windows GPUs; v0.5.x shipped Skia
-          # and rendered fine. Force Skia via the supported runner API.
-          # Fails loudly if the template anchor moves, so we never
-          # silently ship the Impeller default again.
-          $target = "windows/runner/main.cpp"
+          # UniPilot #17: opt-in Skia fallback for GPUs/drivers where the
+          # Impeller presentation path shows a blank window. Default stays
+          # Impeller; UNIPILOT_RENDERER=software, a --software flag, or an
+          # RDP session selects Skia. Fail loudly if the template anchor
+          # moves so we never ship a silently unpatched runner.
+          $target = Join-Path "windows/runner" "main.cpp"
+          $anchor = 'project.set_dart_entrypoint_arguments(std::move(command_line_arguments));'
           $text = Get-Content $target -Raw
-          if ($text -notmatch 'set_impeller_switch') {
-            $anchor = 'project.set_dart_entrypoint_arguments(std::move(command_line_arguments));'
-            if ($text -notmatch [regex]::Escape($anchor)) {
-              Write-Output "ERROR: main.cpp anchor not found - template changed, refusing to ship Impeller default."
+          if ($text -notmatch [regex]::Escape($anchor)) {
+            Write-Error "main.cpp anchor moved - renderer fallback not applied."
+            exit 1
+          }
+          if ($text -notmatch 'UNIPILOT_RENDERER') {
+            # No here-strings: their terminator must sit at column 0,
+            # which would end the YAML block scalar and break parsing.
+            $fallbackLines = @(
+              '// UniPilot renderer fallback (issue #17): honor UNIPILOT_RENDERER=software',
+              '// or a --software flag, and auto-fallback on RDP sessions where the GPU',
+              '// presentation path is unreliable. Falls back to Skia; the default stays',
+              '// Impeller for everyone else. NOTE: this changes the renderer backend,',
+              '// not full software rasterization -- this SDK''s embedder API exposes no',
+              '// generic engine-switches knob, so --enable-software-rendering cannot be',
+              '// passed through. See docs/windows-legacy-gpu.md.',
+              '{',
+              '  const std::wstring args(command_line != nullptr ? command_line : L"");',
+              '  // Matches a standalone --software token only (space- or',
+              '  // quote-delimited): the runner also forwards CLI args to Dart,',
+              '  // so a substring check could misfire on a future Dart flag.',
+              '  // ASCII codes below: 32 = space, 34 = double quote.',
+              '  const auto hasSoftwareFlag = [](const std::wstring& cmd) {',
+              '    const std::wstring flag = L"--software";',
+              '    size_t pos = 0;',
+              '    while ((pos = cmd.find(flag, pos)) != std::wstring::npos) {',
+              '      const bool leftOk = (pos == 0) || (cmd[pos - 1] == 32 || cmd[pos - 1] == 34);',
+              '      const size_t end = pos + flag.size();',
+              '      const bool rightOk = (end >= cmd.size()) || (cmd[end] == 32 || cmd[end] == 34);',
+              '      if (leftOk && rightOk) {',
+              '        return true;',
+              '      }',
+              '      pos += flag.size();',
+              '    }',
+              '    return false;',
+              '  };',
+              '  bool software = hasSoftwareFlag(args);',
+              '  wchar_t renderer_env[32] = {};',
+              '  if (::GetEnvironmentVariableW(L"UNIPILOT_RENDERER", renderer_env, 32) >',
+              '      0) {',
+              '    software = software || (std::wstring(renderer_env) == L"software");',
+              '  }',
+              '  if (!software && ::GetSystemMetrics(SM_REMOTESESSION) != 0) {',
+              '    software = true;',
+              '  }',
+              '  if (software) {',
+              '    project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);',
+              '  }',
+              '}'
+            )
+            $fallback = ($fallbackLines -join "`r`n")
+            $text = $text -replace [regex]::Escape($anchor), ($anchor + "`r`n" + $fallback)
+            Set-Content $target $text -NoNewline -Encoding utf8
+            $check = Get-Content $target -Raw
+            if ($check -notmatch 'set_impeller_switch\(flutter::ImpellerSwitch::Disabled\)') {
+              Write-Error "patch write did not take - marker absent after write."
               exit 1
             }
-            $insert = $anchor + "`r`n`r`n  // UniPilot #17: force Skia; Impeller blanks some Windows GPUs." + "`r`n  project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);"
-            $patched = $text -replace [regex]::Escape($anchor), $insert
-            Set-Content $target $patched -NoNewline
-            Write-Output "Impeller disabled (Skia forced) in Windows runner."
+            Write-Output "Renderer fallback patched into main.cpp."
           } else {
-            Write-Output "Impeller switch already present."
+            Write-Output "Renderer fallback already present."
           }
-          Select-String -Path $target -Pattern 'set_impeller_switch'
         shell: pwsh
 
       - run: flutter pub get
@@ -265,8 +313,44 @@ jobs:
         shell: bash
       - run: flutter build windows --release
 
+      - name: Add safe-mode launcher
+        run: |
+          # UniPilot #17: one-click fallback for blank-window machines.
+          # Sets UNIPILOT_RENDERER=software (see the runner patch above),
+          # then launches the app from its own folder. No machine-specific
+          # paths: %~dp0 always resolves to the unzipped folder.
+          $bat = "@echo off`r`nset UNIPILOT_RENDERER=software`r`nstart `"`" `"%~dp0unipilot.exe`" %*`r`n"
+          Set-Content -Path "build\windows\x64\runner\Release\unipilot-safe-mode.bat" -Value $bat -NoNewline -Encoding Ascii
+          Get-Content -Path "build\windows\x64\runner\Release\unipilot-safe-mode.bat"
+        shell: pwsh
+
       - name: Zip Windows build
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath unipilot-windows.zip
+        shell: pwsh
+
+      - name: Verify Windows artifact
+        run: |
+          # UniPilot #17: the zip must ship the safe-mode launcher, and the
+          # runner source must carry the patched marker. Fail loudly here
+          # rather than publishing a release without the fallback.
+          $src = Get-Content windows/runner/main.cpp -Raw
+          if ($src -notmatch 'set_impeller_switch\(flutter::ImpellerSwitch::Disabled\)') {
+            Write-Error "patched runner marker absent in windows/runner/main.cpp."
+            exit 1
+          }
+          Expand-Archive -Path unipilot-windows.zip -DestinationPath zipcheck -Force
+          foreach ($f in @('unipilot.exe', 'unipilot-safe-mode.bat')) {
+            if (!(Test-Path (Join-Path 'zipcheck' $f))) {
+              Write-Error "missing $f in unipilot-windows.zip."
+              exit 1
+            }
+          }
+          $bat = Get-Content zipcheck/unipilot-safe-mode.bat -Raw
+          if ($bat -notmatch 'UNIPILOT_RENDERER=software') {
+            Write-Error "safe-mode launcher does not set UNIPILOT_RENDERER."
+            exit 1
+          }
+          Write-Output "Windows artifact verification passed."
         shell: pwsh
 
       - uses: actions/upload-artifact@v4

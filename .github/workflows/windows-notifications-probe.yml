@@ -1,0 +1,108 @@
+# UniPilot #16: weekly probe for the Windows notifications blocker.
+#
+# Tries the latest stable flutter_local_notifications on the pinned
+# Flutter SDK in a THROWAWAY working copy (this file never commits
+# anything) and runs the Windows release build whose AOT step used to
+# crash on the Windows FFI bindings.
+#
+# - Failure: result goes to the job summary only. Nothing noisy.
+# - Success: opens (or comments on) a tracking issue so a maintainer
+#   knows the real upgrade is worth retrying.
+#
+# This workflow is fully detached from releases and required checks:
+# it never runs on tags, publishes nothing, and only needs
+# issues:write to file the success report.
+name: Windows notifications probe
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe-fln-aot:
+    name: Probe latest fln Windows AOT build
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+
+      - run: flutter config --enable-windows-desktop
+
+      - name: Ensure platforms exist
+        run: |
+          if (!(Test-Path windows/CMakeLists.txt)) {
+            flutter create --platforms windows --project-name unipilot --org com.unipilot .
+          }
+        shell: pwsh
+
+      - name: Resolve latest stable fln
+        run: |
+          $pkg = Invoke-RestMethod -Uri 'https://pub.dev/api/packages/flutter_local_notifications'
+          $ver = $pkg.latest.version
+          if ([string]::IsNullOrWhiteSpace($ver)) {
+            Write-Error 'Could not resolve latest flutter_local_notifications version.'
+            exit 1
+          }
+          "FLN_LATEST=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Output "Latest stable fln: $ver"
+        shell: pwsh
+
+      - name: Bump fln in throwaway copy
+        run: |
+          # Throwaway edit: CI runners are ephemeral, this never commits.
+          $pub = Get-Content pubspec.yaml -Raw
+          $pub = $pub -replace '(?m)^(\s*)flutter_local_notifications:\s*\S+', "`$1flutter_local_notifications: ^$env:FLN_LATEST"
+          Set-Content pubspec.yaml $pub -NoNewline
+          Select-String -Path pubspec.yaml -Pattern 'flutter_local_notifications:'
+          flutter pub get
+        shell: pwsh
+
+      - name: Generate code (mirror release prerequisites)
+        run: |
+          # *.g.dart is gitignored: a clean checkout has no Drift generated
+          # files, so without this the build would fail for reasons
+          # unrelated to flutter_local_notifications and the AOT verdict
+          # would be meaningless.
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Windows release build (AOT verdict)
+        id: aot
+        run: |
+          flutter build windows --release
+          "AOT_PASS=true" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Output '## Probe result: PASS' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          Write-Output "flutter_local_notifications $env:FLN_LATEST built for Windows on Flutter 3.47.5." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+        shell: pwsh
+
+      - name: Report failure to summary
+        if: failure() && env.AOT_PASS != 'true'
+        run: |
+          Write-Output '## Probe result: FAIL' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          Write-Output "flutter_local_notifications $env:FLN_LATEST did not reach a green Windows release build (resolve or AOT step failed). No issue filed; see #16." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+        shell: pwsh
+
+      - name: File tracking issue on success
+        if: success() && env.AOT_PASS == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $title = "Windows toasts unblocked: AOT build passes with fln $env:FLN_LATEST"
+          $existing = gh issue list --state open --search 'Windows toasts unblocked' --json title,number --jq '.[].number' | Select-Object -First 1
+          $body = "The weekly probe built Windows --release green with flutter_local_notifications $env:FLN_LATEST on Flutter 3.47.5. Worth retrying the real upgrade (see Refs #16)."
+          if ([string]::IsNullOrWhiteSpace($existing)) {
+            gh issue create --title $title --body $body --label enhancement
+          } else {
+            gh issue comment $existing --body $body
+          }
+        shell: pwsh

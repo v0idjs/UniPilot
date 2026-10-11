@@ -3,6 +3,12 @@
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
+### Known blockers
+- Windows toast reminders (#16): upgrading to plugin 22.x on Flutter 3.47.5 still crashes the AOT snapshotter on the Windows FFI bindings (`NativeLaunchDetails`, illegal cid, exit -1073740791), so the upgrade was reverted and notifications stay Android-only on plugin 17.x
+### Fixed
+- Windows blank window (#17): opt-in renderer fallback instead of a blank screen. `UNIPILOT_RENDERER=software`, a `--software` flag, or an RDP session switches the runner to Skia (default stays Impeller); the release zip ships `unipilot-safe-mode.bat`. Startup failures are now logged to `unipilot-error.log` and shown in a fallback UI via `FlutterError.onError` / `PlatformDispatcher.onError` / `runZonedGuarded`
+### Changed
+- Reverted the v0.6.2 Skia-force on Windows: it did not fix #17 (both GPU backends present blank on pre-D3D11 hardware), so the upstream Impeller default is restored rather than shipping a purposeless override. See `docs/windows-legacy-gpu.md`
 
 ## v0.6.2 — 2026-09-25
 ### Fixed
