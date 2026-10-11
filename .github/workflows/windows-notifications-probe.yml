@@ -27,7 +27,7 @@ jobs:
   probe-fln-aot:
     name: Probe latest fln Windows AOT build
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -67,6 +67,14 @@ jobs:
           Select-String -Path pubspec.yaml -Pattern 'flutter_local_notifications:'
           flutter pub get
         shell: pwsh
+
+      - name: Generate code (mirror release prerequisites)
+        run: |
+          # *.g.dart is gitignored: a clean checkout has no Drift generated
+          # files, so without this the build would fail for reasons
+          # unrelated to flutter_local_notifications and the AOT verdict
+          # would be meaningless.
+          dart run build_runner build --delete-conflicting-outputs
 
       - name: Windows release build (AOT verdict)
         id: aot

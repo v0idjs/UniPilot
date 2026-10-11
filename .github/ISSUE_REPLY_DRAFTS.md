@@ -5,16 +5,22 @@
 > Thanks for the report. Please run this check with the latest
 > release and tell me what happens:
 >
-> 1. Close the app, then double-click **`unipilot-safe-mode.bat`**
->    (in the same folder as `unipilot.exe`) and say whether the UI
->    appears.
-> 2. Send your graphics and OS details: GPU model(s) from Device
+> 1. Send your graphics and OS details first: GPU model(s) from Device
 >    Manager → Display adapters, driver version/date, Windows version
->    (run `winver`), and whether you use RDP or a VM.
+>    (run `winver`), and whether you use RDP or a VM. On pre-D3D11
+>    graphics (e.g. Intel GMA / 4-Series on inbox drivers) safe mode
+>    will NOT help — skip to step 4.
+> 2. Otherwise, close the app, then double-click
+>    **`unipilot-safe-mode.bat`** (in the same folder as
+>    `unipilot.exe`) and say whether the UI appears.
 > 3. Attach **`unipilot-error.log`** from your documents folder:
 >    `%USERPROFILE%\Documents\unipilot-error.log`
 >    (same folder as `unipilot_db.sqlite`). If the file is missing,
->    say so — that is also useful information.
+>    say so — that is also useful information (a white window with no
+>    log entry points at the presentation layer, not a Dart exception).
+> 4. If safe mode stays white, the known-effective routes are Force
+>    WARP for `unipilot.exe` via `dxcpl.exe`, or the Android build —
+>    see `docs/windows-legacy-gpu.md`.
 
 ## 2. Status comment for #16 (Windows toasts blocked)
 

@@ -37,10 +37,11 @@ Future<void> main() async {
     try {
       runApp(const UniPilotApp());
     } catch (error, stack) {
-      // Last resort: show what happened instead of a blank window.
+      // Last resort: show a generic message instead of a blank window.
+      // Details go to the log file only, never to the UI.
       await errorLog.log('runApp', error, stack);
       runApp(StartupFailureApp(
-        message: '$error',
+        message: 'The app could not start.',
         logPath: await _logPathOrNull(errorLog),
       ));
       return;

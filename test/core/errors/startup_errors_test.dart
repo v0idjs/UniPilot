@@ -94,6 +94,11 @@ void main() {
         directory: Directory('${blocker.path}/sub'),
       );
       await log.append('lost');
+      // Nothing may leak: no log file appears at the bad location.
+      final leaked = File(
+        '${blocker.path}/sub/${StartupErrorLog.fileName}',
+      );
+      expect(await leaked.exists(), isFalse);
     });
   });
 
