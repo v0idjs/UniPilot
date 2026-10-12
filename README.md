@@ -34,7 +34,7 @@ Offline-first Flutter app for students: class schedule, deadline tracking, GPA c
 
 Grab the latest release for your platform — no accounts, no setup beyond installing:
 
-- **Android**: [`unipilot-android.apk`](https://github.com/v0idjs/UniPilot/releases/latest) — sideload the APK on your device (enable “Install unknown apps” for your browser when prompted). Deadline reminders fire as system notifications.
+- **Android**: [`unipilot-android.apk`](https://github.com/v0idjs/UniPilot/releases/latest) — sideload the APK on your device (enable “Install unknown apps” for your browser when prompted). Deadline reminders fire as system notifications. Coming from v0.7.0 or older? Uninstall the old copy first (one time only — old releases were debug-signed, see [release guide](docs/release.md)); v0.7.1+ updates install cleanly.
 - **Windows**: [`unipilot-windows.zip`](https://github.com/v0idjs/UniPilot/releases/latest) — unzip anywhere and run `unipilot.exe`. No installer, no admin rights. If the window opens blank on old GPUs/drivers, run `unipilot-safe-mode.bat` from the same folder instead (see [Windows guide](docs/windows.md)).
 
 Full release history: [GitHub Releases](https://github.com/v0idjs/UniPilot/releases).

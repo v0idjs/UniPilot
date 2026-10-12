@@ -152,6 +152,25 @@ jobs:
           fi
         shell: bash
 
+      - name: Require signing secrets for releases
+        run: |
+          # A debug-signed APK carries an ephemeral CI key, so the NEXT
+          # release would be rejected on users' phones ("package conflicts
+          # with an existing package"). Never ship that from a tag;
+          # manual dry-runs via workflow_dispatch only warn.
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            if [ "${{ github.ref_type }}" = "tag" ]; then
+              echo "ERROR: refusing to build a release APK without signing secrets."
+              echo "Add KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS and"
+              echo "KEY_PASSWORD (see docs/release.md) and re-tag."
+              exit 1
+            fi
+            echo "WARNING: dry-run without signing secrets - APK would be debug-signed."
+          else
+            echo "Signing secrets present - release APK uses the persistent key."
+          fi
+        shell: bash
+
       - run: flutter pub get
       - name: Generate launcher icons
         run: |
