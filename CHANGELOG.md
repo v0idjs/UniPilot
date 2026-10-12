@@ -3,6 +3,8 @@
 All notable changes to UniPilot. Format follows Keep a Changelog.
 
 ## Unreleased
+
+## v0.7.1 — 2026-10-12
 ### Fixed
 - Android updates no longer break on signature conflicts: releases up to v0.7.0 were debug-signed with ephemeral CI keys, so updating failed with "package conflicts with an existing package". v0.7.1+ uses a persistent upload key; the release workflow now refuses to build a tag without signing secrets. Migrating from v0.7.0 or older requires one uninstall (wipes local data)
 
