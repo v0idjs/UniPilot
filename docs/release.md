@@ -40,6 +40,15 @@ the old copy first: `adb uninstall com.unipilot.unipilot`, then
 install the latest release. The APK is a single universal build, so
 there is no ABI variant to pick.
 
+> One-time migration note: releases up to v0.7.0 were debug-signed
+> (no persistent key was configured), so updating from any of them
+> fails with "package conflicts with an existing package". Uninstall
+> the old copy once — this wipes the app-private database, so there
+> is no data to migrate — then install v0.7.1+, which is signed with
+> the persistent key and updates cleanly from then on. Since v0.7.1
+> the release workflow refuses to build a tag without signing
+> secrets, so this cannot silently regress.
+
 ## Icons
 
 Launcher icons derive from `assets/logo.svg` via the 1024 master at
