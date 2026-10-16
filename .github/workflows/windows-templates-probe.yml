@@ -1,0 +1,86 @@
+name: Windows Runner Templates Probe
+
+# UniPilot #17 prep (workflow_dispatch only, never on push/PR):
+# - scaffolds the Windows runner with the exact flags release.yml uses and
+#   prints windows/runner/main.cpp, runner/CMakeLists.txt and the project
+#   CMakeLists.txt verbatim (template-drift checking for the fail-loud
+#   patch anchors),
+# - builds the app and runs dumpbin on the produced flutter_windows.dll
+#   (/dependents + /imports) to audit its d3d11/dxgi import surface —
+#   ANGLE loads d3d11.dll at runtime, so this records the static part;
+#   runtime resolution needs a human-run Process Monitor on the affected
+#   machine,
+# - dumps the export table of the OS d3d11.dll so a WARP proxy shim can
+#   generate pass-through stubs for every export if anything beyond
+#   D3D11CreateDevice/D3D11CreateDeviceAndSwapChain turns out to be used.
+# Artifacts are uploaded for plan work; nothing is published.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scaffold-and-probe:
+    name: Scaffold runner and audit d3d11 imports
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+
+      - run: flutter config --enable-windows-desktop
+
+      - name: Scaffold platform trees (release.yml flags)
+        run: flutter create --platforms android,windows --project-name unipilot --org com.unipilot .
+        shell: pwsh
+
+      - name: Print scaffolded files verbatim
+        run: |
+          Write-Output "=== verbatim windows/runner/main.cpp ==="
+          Get-Content windows/runner/main.cpp -Raw
+          Write-Output "=== verbatim windows/runner/CMakeLists.txt ==="
+          Get-Content windows/runner/CMakeLists.txt -Raw
+          Write-Output "=== verbatim windows/CMakeLists.txt ==="
+          Get-Content windows/CMakeLists.txt -Raw
+        shell: pwsh
+
+      - run: flutter build windows --release
+        shell: pwsh
+
+      - name: dumpbin audit (flutter_windows.dll + system d3d11.dll)
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (!(Test-Path $vswhere)) { Write-Error 'vswhere not found'; exit 1 }
+          $vsroot = (& $vswhere -latest -property installationPath | Select-Object -First 1)
+          $dumpbin = Get-ChildItem -LiteralPath (Join-Path $vsroot 'VC\Tools\MSVC') -Recurse -Filter dumpbin.exe |
+            Where-Object { $_.FullName -match 'Hostx64\\x64' } |
+            Select-Object -First 1 -ExpandProperty FullName
+          if ($null -eq $dumpbin) { Write-Error 'dumpbin.exe not found under VS install'; exit 1 }
+          Write-Output "Using dumpbin: $dumpbin"
+          $dll = 'build\windows\x64\runner\Release\flutter_windows.dll'
+          & $dumpbin /dependents $dll | Out-File -FilePath d3d11-dependents.txt
+          & $dumpbin /imports $dll | Out-File -FilePath d3d11-imports.txt
+          & $dumpbin /exports C:\Windows\System32\d3d11.dll | Out-File -FilePath d3d11-exports.txt
+          Write-Output '=== flutter_windows.dll dependents ==='
+          Get-Content d3d11-dependents.txt
+          Write-Output '=== d3d11/dxgi lines in flutter_windows.dll imports (static) ==='
+          $hits = Select-String -Path d3d11-imports.txt -Pattern 'd3d1[0-2]|dxgi|LOAD' -SimpleMatch:$false
+          if ($null -eq $hits) { Write-Output 'none - d3d11 resolved at runtime, not statically imported' }
+          else { $hits | ForEach-Object { $_.Line } }
+          Write-Output '=== system d3d11.dll export count ==='
+          (Select-String -Path d3d11-exports.txt -Pattern '^\s+\d+').Count
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-templates-probe
+          path: |
+            windows/runner/main.cpp
+            windows/runner/CMakeLists.txt
+            windows/CMakeLists.txt
+            d3d11-dependents.txt
+            d3d11-imports.txt
+            d3d11-exports.txt
