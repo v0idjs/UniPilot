@@ -47,6 +47,13 @@ jobs:
           Get-Content windows/CMakeLists.txt -Raw
         shell: pwsh
 
+      - run: flutter pub get
+        shell: pwsh
+
+      # Codegen is gitignored (*.g.dart) and mandatory before any build.
+      - run: dart run build_runner build --delete-conflicting-outputs
+        shell: pwsh
+
       - run: flutter build windows --release
         shell: pwsh
 
