@@ -1,0 +1,49 @@
+Microsoft (R) COFF/PE Dumper Version 14.29.30159.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file build\windows\x64\runner\Release\flutter_windows.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    ADVAPI32.dll
+    IPHLPAPI.DLL
+    ole32.dll
+    OLEAUT32.dll
+    PSAPI.DLL
+    SHLWAPI.dll
+    RPCRT4.dll
+    WINMM.dll
+    WS2_32.dll
+    IMM32.dll
+    USER32.dll
+    OPENGL32.dll
+    bcrypt.dll
+    api-ms-win-core-path-l1-1-0.dll
+    ntdll.dll
+    GDI32.dll
+    KERNEL32.dll
+    CRYPT32.dll
+    UIAutomationCore.DLL
+    OLEACC.dll
+    PROPSYS.dll
+    dxgi.dll
+    d3d9.dll
+    api-ms-win-core-synch-l1-2-0.dll
+
+  Image has the following delay load dependencies:
+
+    dwmapi.dll
+    dbghelp.dll
+
+  Summary
+
+       8A000 .data
+       79000 .pdata
+      364000 .rdata
+       1F000 .reloc
+      FF6000 .text
+        1000 _RDATA
+        1000 malloc_h
